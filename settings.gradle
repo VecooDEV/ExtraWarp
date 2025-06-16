@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = "https://maven.fabricmc.net/" }
+        maven { url = "https://maven.neoforged.net/releases" }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.10.0'
+}
+
+rootProject.name = project_name
+
+include 'forge16', 'forge19', 'forge20', 'fabric20', 'fabric21', 'neoforge21'

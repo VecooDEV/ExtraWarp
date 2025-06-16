@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "extrawarp",
+  "version": "${project_version}",
+  "name": "${project_name}",
+  "icon": "assets/extrawarp/icon.png",
+  "description": "Mod adding warp system.",
+  "authors": [
+    "Vecoo"
+  ],
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.vecoo.extrawarp.ExtraWarp"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": "<=1.21.1",
+    "java": ">=21",
+    "extralib": ">=1.6.0"
+  }
+}

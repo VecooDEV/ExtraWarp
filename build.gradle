@@ -1,0 +1,38 @@
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+
+    group = 'com.vecoo.extrawarp'
+    version = project_version
+
+    jar {
+        setArchiveBaseName("${rootProject.name}")
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url = "https://api.modrinth.com/maven" }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
+    task versionedRelease(type: Copy) {
+        group "build"
+
+        delete fileTree('../release/') {
+            include '**/*.jar'
+        }
+
+        from fileTree("/build/libs/") {
+            include '**/*.jar'
+        }
+
+        into('../release/')
+
+        doLast {
+            delete "build/libs"
+        }
+    }
+}
