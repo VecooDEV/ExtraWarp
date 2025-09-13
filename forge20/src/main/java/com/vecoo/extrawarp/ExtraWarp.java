@@ -10,6 +10,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.permission.events.PermissionGatherEvent;
@@ -34,7 +36,7 @@ public class ExtraWarp {
     public ExtraWarp() {
         instance = this;
 
-        this.loadConfig();
+        loadConfig();
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -81,7 +83,12 @@ public class ExtraWarp {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         this.server = event.getServer();
-        this.loadStorage();
+        loadStorage();
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onServerStopping(ServerStoppingEvent event) {
+        this.warpProvider.write();
     }
 
     public void loadConfig() {

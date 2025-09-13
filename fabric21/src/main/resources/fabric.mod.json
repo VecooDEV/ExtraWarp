@@ -8,6 +8,7 @@
   "authors": [
     "Vecoo"
   ],
+  "license": "MIT",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -17,8 +18,8 @@
   "depends": {
     "fabricloader": "*",
     "fabric": "*",
-    "minecraft": "<=1.21.1",
+    "minecraft": ">=1.21.1",
     "java": ">=21",
-    "extralib": ">=1.6.0"
+    "extralib": ">=1.7"
   }
 }

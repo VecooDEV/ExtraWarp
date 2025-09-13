@@ -28,13 +28,14 @@ public class ExtraWarp implements ModInitializer {
     public void onInitialize() {
         instance = this;
 
-        this.loadConfig();
+        loadConfig();
 
         CommandRegistrationCallback.EVENT.register(WarpCommand::register);
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             this.server = server;
-            this.loadStorage();
+            loadStorage();
         });
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> this.warpProvider.write());
     }
 
     public void loadConfig() {

@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "[2,)"
-license = "All Rights Reserved"
+license = "MIT"
 
 [[mods]]
 modId = "extrawarp"
@@ -27,6 +27,6 @@ side = "BOTH"
 [[dependencies.extrawarp]]
 modId = "extralib"
 type = "required"
-versionRange = "[1.6,)"
+versionRange = "[1.7,)"
 ordering = "NONE"
 side = "BOTH"

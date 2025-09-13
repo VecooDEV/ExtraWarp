@@ -895,7 +895,6 @@ public class WarpCommand {
 
     private static int executeReload(CommandSource source) {
         ExtraWarp.getInstance().loadConfig();
-        ExtraWarp.getInstance().loadStorage();
 
         source.sendSuccess(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getReload()), false);
         return 1;

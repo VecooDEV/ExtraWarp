@@ -7,11 +7,13 @@ import com.vecoo.extrawarp.config.ServerConfig;
 import com.vecoo.extrawarp.storage.warp.WarpProvider;
 import com.vecoo.extrawarp.util.PermissionNodes;
 import net.minecraft.server.MinecraftServer;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.server.permission.events.PermissionGatherEvent;
 import net.neoforged.neoforge.server.permission.nodes.PermissionNode;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +36,7 @@ public class ExtraWarp {
     public ExtraWarp() {
         instance = this;
 
-        this.loadConfig();
+        loadConfig();
 
         NeoForge.EVENT_BUS.register(this);
     }
@@ -81,7 +83,12 @@ public class ExtraWarp {
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         this.server = event.getServer();
-        this.loadStorage();
+        loadStorage();
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onServerStopping(ServerStoppingEvent event) {
+        this.warpProvider.write();
     }
 
     public void loadConfig() {

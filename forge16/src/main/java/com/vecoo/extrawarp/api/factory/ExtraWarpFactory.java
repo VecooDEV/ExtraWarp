@@ -73,27 +73,7 @@ public class ExtraWarpFactory {
 
     public static class WarpProvider {
         public static Set<Warp> getWarps() {
-            return ExtraWarp.getInstance().getWarpProvider().getWarps();
-        }
-
-        public static Warp getWarp(UUID warpUUID) {
-            for (Warp warp : getWarps()) {
-                if (warp.getUUID().equals(warpUUID)) {
-                    return warp;
-                }
-            }
-
-            return null;
-        }
-
-        public static boolean hasWarp(UUID warpUUID) {
-            for (Warp warp : getWarps()) {
-                if (warp.getUUID().equals(warpUUID)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return ExtraWarp.getInstance().getWarpProvider().getStorage();
         }
 
         public static boolean hasWarpByName(String warpName) {

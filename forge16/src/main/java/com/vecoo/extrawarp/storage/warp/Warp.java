@@ -1,13 +1,11 @@
 package com.vecoo.extrawarp.storage.warp;
 
 import com.vecoo.extrawarp.ExtraWarp;
-import com.vecoo.extrawarp.util.Utils;
 import net.minecraft.entity.player.ServerPlayerEntity;
 
 import java.util.*;
 
 public class Warp {
-    private final UUID uuid;
     private String name;
     private List<String> coordinatePosition;
     private String dimensionName;
@@ -20,7 +18,6 @@ public class Warp {
     private boolean locked;
 
     public Warp(String name, ServerPlayerEntity player, boolean isLocked) {
-        this.uuid = Utils.generateUUID();
         this.name = name;
         this.coordinatePosition = Arrays.asList(String.format("%.2f", player.getX()), String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()), String.format("%.2f", player.xRot), String.format("%.2f", player.yRot));
         this.dimensionName = player.getLevel().dimension().location().getPath();
@@ -31,10 +28,6 @@ public class Warp {
         this.uniquePlayersCount = 0;
         this.welcomeText = "";
         this.locked = isLocked;
-    }
-
-    public UUID getUUID() {
-        return this.uuid;
     }
 
     public String getName() {
@@ -95,58 +88,66 @@ public class Warp {
 
     public void setName(String name) {
         this.name = name;
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void setCoordinatePosition(float x, float y, float z, float xRot, float yRot) {
         this.coordinatePosition = Arrays.asList(String.format("%.2f", x), String.format("%.2f", y), String.format("%.2f", z), String.format("%.2f", xRot), String.format("%.2f", yRot));
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void updatePosition(ServerPlayerEntity player) {
         this.dimensionName = player.getLevel().dimension().location().getPath();
         this.coordinatePosition = Arrays.asList(String.format("%.2f", player.getX()), String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()), String.format("%.2f", player.xRot), String.format("%.2f", player.yRot));
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void setDimensionName(String dimensionName) {
         this.dimensionName = dimensionName;
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void addInvitePlayer(UUID playerUUID) {
         this.invitePlayers.add(playerUUID);
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void removeInvitePlayer(UUID playerUUID) {
         this.invitePlayers.remove(playerUUID);
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void addBlacklistPlayer(UUID playerUUID) {
         this.blacklistPlayers.add(playerUUID);
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void removeBlacklistPlayer(UUID playerUUID) {
         this.blacklistPlayers.remove(playerUUID);
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void addUniquePlayer(UUID playerUUID) {
         this.uniquePlayers.add(playerUUID);
         this.uniquePlayersCount++;
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void setWelcomeText(String text) {
         this.welcomeText = text;
-        ExtraWarp.getInstance().getWarpProvider().write();
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
-        ExtraWarp.getInstance().getWarpProvider().write();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+
+        return this.name.equalsIgnoreCase(((Warp) object).name);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
     }
 }

@@ -1,11 +1,9 @@
 package com.vecoo.extrawarp.config;
 
 import com.vecoo.extralib.gson.UtilGson;
-import com.vecoo.extrawarp.ExtraWarp;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class ServerConfig {
     private int baseCountWarp = 2;
@@ -29,21 +27,16 @@ public class ServerConfig {
     }
 
     public void init() {
-        try {
-            CompletableFuture<Boolean> future = UtilGson.readFileAsync("/config/ExtraWarp/", "config.json", el -> {
-                ServerConfig config = UtilGson.newGson().fromJson(el, ServerConfig.class);
+        boolean completed = UtilGson.readFileAsync("/config/ExtraWarp/", "config.json", el -> {
+            ServerConfig config = UtilGson.newGson().fromJson(el, ServerConfig.class);
 
-                this.baseCountWarp = config.getBaseCountWarp();
-                this.maxMaxCharactersWarp = config.getMaxMaxCharactersWarp();
-                this.permissionListingList = config.getPermissionListingList();
-            });
-            if (!future.join()) {
-                write();
-            }
-        } catch (Exception e) {
-            ExtraWarp.getLogger().error("[ExtraWarp] Error in config.");
+            this.baseCountWarp = config.getBaseCountWarp();
+            this.maxMaxCharactersWarp = config.getMaxMaxCharactersWarp();
+            this.permissionListingList = config.getPermissionListingList();
+        }).join();
+
+        if (!completed) {
             write();
         }
     }
-
 }

@@ -1,11 +1,9 @@
 package com.vecoo.extrawarp.config;
 
 import com.vecoo.extralib.gson.UtilGson;
-import com.vecoo.extrawarp.ExtraWarp;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class LocaleConfig {
     private String reload = "&e(!) Configs have been reloaded.";
@@ -279,63 +277,59 @@ public class LocaleConfig {
     }
 
     public void init() {
-        try {
-            CompletableFuture<Boolean> future = UtilGson.readFileAsync("/config/ExtraWarp/", "locale.json", el -> {
-                LocaleConfig config = UtilGson.newGson().fromJson(el, LocaleConfig.class);
+        boolean completed = UtilGson.readFileAsync("/config/ExtraWarp/", "locale.json", el -> {
+            LocaleConfig config = UtilGson.newGson().fromJson(el, LocaleConfig.class);
 
-                this.reload = config.getReload();
-                this.teleportWarp = config.getTeleportWarp();
-                this.setWarp = config.getSetWarp();
-                this.warpNotFound = config.getWarpNotFound();
-                this.warpExist = config.getWarpExist();
-                this.privateWarp = config.getPrivateWarp();
-                this.warpPrivate = config.getWarpPrivate();
-                this.infoWarp = config.getInfoWarp();
-                this.blacklistWarp = config.getBlacklistWarp();
-                this.warpNotOwner = config.getWarpNotOwner();
-                this.warpRemoved = config.getWarpRemoved();
-                this.warpAssets = config.getWarpAssets();
-                this.warpAssetsPlayer = config.getWarpAssetsPlayer();
-                this.setWarpPrivate = config.getSetWarpPrivate();
-                this.warpUpdate = config.getWarpUpdate();
-                this.publicWarp = config.getPublicWarp();
-                this.topWarpTitle = config.getTopWarpTitle();
-                this.topWarp = config.getTopWarp();
-                this.warpNotYourself = config.getWarpNotYourself();
-                this.warpPlayerAlready = config.getWarpPlayerAlready();
-                this.inviteWarp = config.getInviteWarp();
-                this.unInviteWarp = config.getUnInviteWarp();
-                this.blacklistAddedWarp = config.getBlacklistAddedWarp();
-                this.blacklistRemovedWarp = config.getBlacklistRemovedWarp();
-                this.playerNotFound = config.getPlayerNotFound();
-                this.warpError = config.getWarpError();
-                this.invalidWarpArgument = config.getInvalidWarpArgument();
-                this.warpMaxCharacters = config.getWarpMaxCharacters();
-                this.maxWarp = config.getMaxWarp();
-                this.warpRename = config.getWarpRename();
-                this.warpSetWelcome = config.getWarpSetWelcome();
-                this.help = config.getHelp();
-                this.warpRemoveWelcome = config.getWarpRemoveWelcome();
-                this.warpWelcomeEmpty = config.getWarpWelcomeEmpty();
-                this.warpBorder = config.getWarpBorder();
-                this.warpNotDimension = config.getWarpNotDimension();
-                this.equalsRename = config.getEqualsRename();
-                this.invitedWarp = config.getInvitedWarp();
-                this.locked = config.getLocked();
-                this.unlocked = config.getUnlocked();
-                this.addWelcome = config.getAddWelcome();
-                this.places = config.getPlaces();
-                this.hoverTopWarp = config.getHoverTopWarp();
-                this.hoverSetToPrivateWarp = config.getHoverSetToPrivateWarp();
-                this.setWarpAdditional = config.getSetWarpAdditional();
-                this.warpPrivated = config.getWarpPrivated();
-                this.warpPubliced = config.getWarpPubliced();
-            });
-            if (!future.join()) {
-                write();
-            }
-        } catch (Exception e) {
-            ExtraWarp.getLogger().error("[ExtraWarp] Error in locale config.");
+            this.reload = config.getReload();
+            this.teleportWarp = config.getTeleportWarp();
+            this.setWarp = config.getSetWarp();
+            this.warpNotFound = config.getWarpNotFound();
+            this.warpExist = config.getWarpExist();
+            this.privateWarp = config.getPrivateWarp();
+            this.warpPrivate = config.getWarpPrivate();
+            this.infoWarp = config.getInfoWarp();
+            this.blacklistWarp = config.getBlacklistWarp();
+            this.warpNotOwner = config.getWarpNotOwner();
+            this.warpRemoved = config.getWarpRemoved();
+            this.warpAssets = config.getWarpAssets();
+            this.warpAssetsPlayer = config.getWarpAssetsPlayer();
+            this.setWarpPrivate = config.getSetWarpPrivate();
+            this.warpUpdate = config.getWarpUpdate();
+            this.publicWarp = config.getPublicWarp();
+            this.topWarpTitle = config.getTopWarpTitle();
+            this.topWarp = config.getTopWarp();
+            this.warpNotYourself = config.getWarpNotYourself();
+            this.warpPlayerAlready = config.getWarpPlayerAlready();
+            this.inviteWarp = config.getInviteWarp();
+            this.unInviteWarp = config.getUnInviteWarp();
+            this.blacklistAddedWarp = config.getBlacklistAddedWarp();
+            this.blacklistRemovedWarp = config.getBlacklistRemovedWarp();
+            this.playerNotFound = config.getPlayerNotFound();
+            this.warpError = config.getWarpError();
+            this.invalidWarpArgument = config.getInvalidWarpArgument();
+            this.warpMaxCharacters = config.getWarpMaxCharacters();
+            this.maxWarp = config.getMaxWarp();
+            this.warpRename = config.getWarpRename();
+            this.warpSetWelcome = config.getWarpSetWelcome();
+            this.help = config.getHelp();
+            this.warpRemoveWelcome = config.getWarpRemoveWelcome();
+            this.warpWelcomeEmpty = config.getWarpWelcomeEmpty();
+            this.warpBorder = config.getWarpBorder();
+            this.warpNotDimension = config.getWarpNotDimension();
+            this.equalsRename = config.getEqualsRename();
+            this.invitedWarp = config.getInvitedWarp();
+            this.locked = config.getLocked();
+            this.unlocked = config.getUnlocked();
+            this.addWelcome = config.getAddWelcome();
+            this.places = config.getPlaces();
+            this.hoverTopWarp = config.getHoverTopWarp();
+            this.hoverSetToPrivateWarp = config.getHoverSetToPrivateWarp();
+            this.setWarpAdditional = config.getSetWarpAdditional();
+            this.warpPrivated = config.getWarpPrivated();
+            this.warpPubliced = config.getWarpPubliced();
+        }).join();
+
+        if (!completed) {
             write();
         }
     }

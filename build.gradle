@@ -14,20 +14,22 @@ subprojects {
         maven { url = "https://api.modrinth.com/maven" }
     }
 
-    tasks.withType(JavaCompile) {
+    tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
     }
 
-    task versionedRelease(type: Copy) {
+    tasks.register('versionedRelease', Copy) {
         group "build"
 
         delete fileTree('../release/') {
             include '**/*.jar'
         }
 
-        from fileTree("/build/libs/") {
-            include '**/*.jar'
-        }
+        from(fileTree("build/libs") {
+            include '*Forge.jar'
+            include '*Fabric.jar'
+            include '*NeoForge.jar'
+        })
 
         into('../release/')
 

@@ -7,9 +7,11 @@ import com.vecoo.extrawarp.storage.warp.WarpProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +34,7 @@ public class ExtraWarp {
     public ExtraWarp() {
         instance = this;
 
-        this.loadConfig();
+        loadConfig();
 
         MinecraftForge.EVENT_BUS.register(this);
     }
@@ -45,7 +47,7 @@ public class ExtraWarp {
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
         this.server = event.getServer();
-        this.loadStorage();
+        loadStorage();
 
         PermissionAPI.registerNode("minecraft.command.warp", DefaultPermissionLevel.OP, "");
         PermissionAPI.registerNode("minecraft.command.warp.set", DefaultPermissionLevel.OP, "");
@@ -65,9 +67,14 @@ public class ExtraWarp {
         PermissionAPI.registerNode("minecraft.command.warp.info", DefaultPermissionLevel.OP, "");
         PermissionAPI.registerNode("minecraft.command.warp.update", DefaultPermissionLevel.OP, "");
 
-        for (String node : config.getPermissionListingList()) {
+        for (String node : this.config.getPermissionListingList()) {
             PermissionAPI.registerNode(node, DefaultPermissionLevel.OP, "");
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void onServerStopping(FMLServerStoppingEvent event) {
+        this.warpProvider.write();
     }
 
     public void loadConfig() {

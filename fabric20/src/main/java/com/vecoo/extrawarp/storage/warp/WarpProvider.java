@@ -1,13 +1,13 @@
 package com.vecoo.extrawarp.storage.warp;
 
 import com.vecoo.extralib.gson.UtilGson;
+import com.vecoo.extralib.task.TaskTimer;
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class WarpProvider {
     private transient final String filePath;
@@ -16,10 +16,10 @@ public class WarpProvider {
     public WarpProvider(String filePath, MinecraftServer server) {
         this.filePath = UtilWorld.worldDirectory(filePath, server);
 
-        this.warps = ConcurrentHashMap.newKeySet();
+        this.warps = new HashSet<>();
     }
 
-    public Set<Warp> getWarps() {
+    public Set<Warp> getStorage() {
         return this.warps;
     }
 
@@ -29,7 +29,6 @@ public class WarpProvider {
             return false;
         }
 
-        write();
         return true;
     }
 
@@ -39,19 +38,28 @@ public class WarpProvider {
             return false;
         }
 
-        write();
         return true;
     }
 
     public void write() {
-        UtilGson.writeFileAsync(filePath, "WarpStorage.json", UtilGson.newGson().toJson(this)).join();
+        UtilGson.writeFileAsync(this.filePath, "WarpStorage.json", UtilGson.newGson().toJson(this)).join();
+    }
+
+    private void writeInterval() {
+        TaskTimer.builder()
+                .withoutDelay()
+                .interval(90 * 20L)
+                .infinite()
+                .consume(task -> {
+                    if (ExtraWarp.getInstance().getServer().isRunning()) {
+                        UtilGson.writeFileAsync(this.filePath, "WarpStorage.json", UtilGson.newGson().toJson(this));
+                    }
+                })
+                .build();
     }
 
     public void init() {
-        CompletableFuture<Boolean> future = UtilGson.readFileAsync(filePath, "WarpStorage.json", el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getWarps()));
-
-        if (!future.join()) {
-            write();
-        }
+        UtilGson.readFileAsync(this.filePath, "WarpStorage.json", el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getStorage())).join();
+        writeInterval();
     }
 }
