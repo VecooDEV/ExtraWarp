@@ -10,42 +10,45 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class ExtraWarpFactory {
-    public static boolean teleportWarp(ServerPlayer player, Warp warp) {
-        ServerLevel world = UtilWorld.getLevelByName(warp.getDimensionName());
+    public static boolean teleportWarp(@NotNull ServerPlayer player, @NotNull Warp warp) {
+        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
 
-        if (world == null) {
+        if (level == null) {
             return false;
         }
 
         BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(warp.getX(), warp.getY(), warp.getZ());
 
         if (!player.getAbilities().flying) {
-            blockPos = findPosition(blockPos, world);
+            blockPos = findPosition(blockPos, level);
 
             if (blockPos == null) {
                 return false;
             }
         }
 
-        player.teleportTo(world, warp.getX(), blockPos.getY(), warp.getZ(), warp.getYRot(), warp.getXRot());
+        player.teleportTo(level, warp.getX(), blockPos.getY(), warp.getZ(), warp.getYRot(), warp.getXRot());
         player.setDeltaMovement(Vec3.ZERO);
         return true;
     }
 
-    private static BlockPos.MutableBlockPos findPosition(BlockPos.MutableBlockPos blockPos, ServerLevel world) {
-        ChunkAccess chunk = world.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
+    @Nullable
+    private static BlockPos.MutableBlockPos findPosition(@NotNull BlockPos.MutableBlockPos blockPos, @NotNull ServerLevel level) {
+        ChunkAccess chunk = level.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
 
         if (chunk == null) {
             return null;
         }
 
-        while (blockPos.getY() > -1) {
+        while (blockPos.getY() > level.getMinBuildHeight()) {
             if (!chunk.getBlockState(blockPos).isAir()) {
                 break;
             }
@@ -53,7 +56,7 @@ public class ExtraWarpFactory {
             blockPos.move(Direction.DOWN);
         }
 
-        if (blockPos.getY() == -1) {
+        if (blockPos.getY() <= level.getMinBuildHeight()) {
             return null;
         }
 
@@ -65,11 +68,12 @@ public class ExtraWarpFactory {
     }
 
     public static class WarpProvider {
+        @NotNull
         public static Set<Warp> getWarps() {
             return ExtraWarp.getInstance().getWarpProvider().getStorage();
         }
 
-        public static boolean hasWarpByName(String warpName) {
+        public static boolean hasWarpByName(@NotNull String warpName) {
             for (Warp warp : getWarps()) {
                 if (warp.getName().equalsIgnoreCase(warpName)) {
                     return true;
@@ -79,7 +83,8 @@ public class ExtraWarpFactory {
             return false;
         }
 
-        public static Warp getWarpByName(String warpName) {
+        @Nullable
+        public static Warp getWarpByName(@NotNull String warpName) {
             for (Warp warp : getWarps()) {
                 if (warp.getName().equalsIgnoreCase(warpName)) {
                     return warp;
@@ -89,7 +94,8 @@ public class ExtraWarpFactory {
             return null;
         }
 
-        public static Set<Warp> getWarpsByPlayer(UUID playerUUID) {
+        @NotNull
+        public static Set<Warp> getWarpsByPlayer(@NotNull UUID playerUUID) {
             Set<Warp> warps = new HashSet<>();
 
             for (Warp warp : getWarps()) {
@@ -101,11 +107,11 @@ public class ExtraWarpFactory {
             return warps;
         }
 
-        public static boolean addWarp(Warp warp) {
+        public static boolean addWarp(@NotNull Warp warp) {
             return ExtraWarp.getInstance().getWarpProvider().addWarp(warp);
         }
 
-        public static boolean removeWarp(Warp warp) {
+        public static boolean removeWarp(@NotNull Warp warp) {
             return ExtraWarp.getInstance().getWarpProvider().removeWarp(warp);
         }
     }

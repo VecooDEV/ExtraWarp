@@ -1,5 +1,6 @@
 package com.vecoo.extrawarp.command;
 
+import com.google.common.collect.Sets;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.vecoo.extralib.chat.UtilChat;
@@ -21,6 +22,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.common.UsernameCache;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -253,9 +255,9 @@ public class WarpCommand {
                                 .executes(e -> executeUpdate(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException())))));
     }
 
-    private static final List<String> COMMAND_ARGUMENT = Arrays.asList("set", "pset", "delete", "private", "invite", "uninvite", "blacklist", "public", "rename", "welcome", "help", "reload", "assets", "info", "update");
+    private static final Set<String> COMMAND_ARGUMENT = Sets.newHashSet("set", "pset", "delete", "private", "invite", "uninvite", "blacklist", "public", "rename", "welcome", "help", "reload", "assets", "info", "update");
 
-    private static int execute(String name, ServerPlayer player) {
+    private static int execute(@NotNull String name, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -267,27 +269,30 @@ public class WarpCommand {
 
         UUID playerUUID = player.getUUID();
 
-        if (!warp.getOwnerUUID().equals(playerUUID) && warp.isLocked() && !warp.getInvitePlayers().contains(playerUUID) && !player.hasPermissions(4)) {
+        if (!warp.getOwnerUUID().equals(playerUUID) && warp.isLocked() && !warp.getInvitePlayers().contains(playerUUID)
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPrivate()
                     .replace("%warp%", name)));
             return 0;
         }
 
-        if (warp.getBlacklistPlayers().contains(playerUUID) && !player.hasPermissions(4)) {
+        if (warp.getBlacklistPlayers().contains(playerUUID)
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getBlacklistWarp()
                     .replace("%warp%", name)));
             return 0;
         }
 
-        ServerLevel world = UtilWorld.getLevelByName(warp.getDimensionName());
+        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
 
-        if (world == null) {
+        if (level == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpError()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        if (warp.getX() >= world.getWorldBorder().getMaxX() || warp.getY() < 1 || warp.getY() > world.getMaxBuildHeight() || warp.getZ() >= world.getWorldBorder().getMaxZ()) {
+        if (warp.getX() >= level.getWorldBorder().getMaxX() || warp.getY() < level.getMinBuildHeight() ||
+                warp.getY() > level.getMaxBuildHeight() || warp.getZ() >= level.getWorldBorder().getMaxZ()) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpBorder()
                     .replace("%warp%", name)));
             return 0;
@@ -299,9 +304,7 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!warp.getUniquePlayers().contains(playerUUID)) {
-            warp.addUniquePlayer(playerUUID);
-        }
+        warp.addUniquePlayer(playerUUID);
 
         if (warp.getWelcomeText().isEmpty()) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getTeleportWarp()
@@ -313,11 +316,12 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeSet(String name, ServerPlayer player) {
+    private static int executeSet(@NotNull String name, @NotNull ServerPlayer player) {
         int maxWarpsPlayer = Utils.maxCountWarp(player);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
-        if (ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID()).size() >= maxWarpsPlayer && !player.hasPermissions(4)) {
+        if (ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID()).size() >= maxWarpsPlayer
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getMaxWarp()
                     .replace("%count%", String.valueOf(maxWarpsPlayer))));
             return 0;
@@ -347,15 +351,18 @@ public class WarpCommand {
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getSetWarp()
                 .replace("%warp%", name)).copy().append(UtilChat.clickableMessageCommand(localeConfig.getSetWarpAdditional(),
-                "/warp private " + name).copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, UtilChat.formatMessage(localeConfig.getHoverSetToPrivateWarp() + name))))));
+                        "/warp private " + name).copy()
+                .withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        UtilChat.formatMessage(localeConfig.getHoverSetToPrivateWarp() + name))))));
         return 1;
     }
 
-    private static int executePrivateSet(String name, ServerPlayer player) {
+    private static int executePrivateSet(@NotNull String name, @NotNull ServerPlayer player) {
         int maxWarpsPlayer = Utils.maxCountWarp(player);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
-        if (ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID()).size() >= maxWarpsPlayer && !player.hasPermissions(4)) {
+        if (ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID()).size() >= maxWarpsPlayer
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getMaxWarp()
                     .replace("%count%", String.valueOf(maxWarpsPlayer))));
             return 0;
@@ -388,7 +395,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeDelete(String name, CommandSourceStack source) {
+    private static int executeDelete(@NotNull String name, @NotNull CommandSourceStack source) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -398,7 +405,8 @@ public class WarpCommand {
             return 0;
         }
 
-        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID()) && !source.hasPermission(4) && source.getEntity() != null) {
+        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID())
+                && !UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS) && source.getEntity() != null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
@@ -415,7 +423,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeInfo(String name, CommandSourceStack source) {
+    private static int executeInfo(@NotNull String name, @NotNull CommandSourceStack source) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -425,10 +433,8 @@ public class WarpCommand {
             return 0;
         }
 
-        String textLocked = warp.isLocked() ? localeConfig.getLocked() : localeConfig.getUnlocked();
-
-        List<String> playerInviteName = new ArrayList<>();
-        List<String> playerBlacklistName = new ArrayList<>();
+        Set<String> playerInviteName = new HashSet<>();
+        Set<String> playerBlacklistName = new HashSet<>();
 
         for (UUID playerUUID : warp.getInvitePlayers()) {
             if (UsernameCache.containsUUID(playerUUID)) {
@@ -442,21 +448,25 @@ public class WarpCommand {
             }
         }
 
+        ServerPlayer player = source.getPlayer();
+        boolean hideXYZ = player != null && warp.isLocked() && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)
+                && !warp.getOwnerUUID().equals(player.getUUID()) && !warp.getInvitePlayers().contains(player.getUUID());
+
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getInfoWarp()
                 .replace("%warp%", warp.getName())
                 .replace("%owner%", UtilPlayer.getPlayerName(warp.getOwnerUUID()))
-                .replace("%x%", String.valueOf(warp.getX()))
-                .replace("%y%", String.valueOf(warp.getY()))
-                .replace("%z%", String.valueOf(warp.getZ()))
+                .replace("%x%", hideXYZ ? "-" : String.valueOf(warp.getX()))
+                .replace("%y%", hideXYZ ? "-" : String.valueOf(warp.getY()))
+                .replace("%z%", hideXYZ ? "-" : String.valueOf(warp.getZ()))
                 .replace("%dimension%", warp.getDimensionName())
                 .replace("%invitePlayers%", playerInviteName.toString())
                 .replace("%blacklistPlayers%", playerBlacklistName.toString())
                 .replace("%count%", String.valueOf(warp.getUniquePlayers().size()))
-                .replace("%locked%", textLocked)));
+                .replace("%locked%", warp.isLocked() ? localeConfig.getLocked() : localeConfig.getUnlocked())));
         return 1;
     }
 
-    private static int executeUpdate(String name, ServerPlayer player) {
+    private static int executeUpdate(@NotNull String name, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -466,20 +476,35 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!warp.getOwnerUUID().equals(player.getUUID()) && !player.hasPermissions(4)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        warp.updatePosition(player);
+        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
 
+        if (level == null) {
+            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpError()
+                    .replace("%warp%", warp.getName())));
+            return 0;
+        }
+
+        if (warp.getX() >= level.getWorldBorder().getMaxX() || warp.getY() < level.getMinBuildHeight() ||
+                warp.getY() > level.getMaxBuildHeight() || warp.getZ() >= level.getWorldBorder().getMaxZ()) {
+            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpBorder()
+                    .replace("%warp%", name)));
+            return 0;
+        }
+
+        warp.updatePosition(player);
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpUpdate()
                 .replace("%warp%", warp.getName())));
         return 1;
     }
 
-    private static int executeRename(String name, String newName, CommandSourceStack source) {
+    private static int executeRename(@NotNull String name, @NotNull String newName, @NotNull CommandSourceStack source) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -489,7 +514,8 @@ public class WarpCommand {
             return 0;
         }
 
-        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID()) && !source.hasPermission(4)) {
+        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID())
+                && !UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS)) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
@@ -501,8 +527,13 @@ public class WarpCommand {
             return 0;
         }
 
-        warp.setName(newName);
+        if (ExtraWarpFactory.WarpProvider.hasWarpByName(newName)) {
+            source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpExist()
+                    .replace("%warp%", newName)));
+            return 0;
+        }
 
+        warp.setName(newName);
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpRename()
                 .replace("%warp%", warp.getName())
                 .replace("%name%", newName)));
@@ -510,7 +541,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executePrivate(String name, ServerPlayer player) {
+    private static int executePrivate(@NotNull String name, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -526,7 +557,8 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!warp.getOwnerUUID().equals(player.getUUID()) && !player.hasPermissions(4)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
@@ -539,7 +571,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executePublic(String name, ServerPlayer player) {
+    private static int executePublic(@NotNull String name, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -555,7 +587,8 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!warp.getOwnerUUID().equals(player.getUUID()) && !player.hasPermissions(4)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())
+                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
@@ -568,7 +601,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeInvite(String name, String playerName, ServerPlayer player) {
+    private static int executeInvite(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -578,7 +611,9 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!UtilPlayer.hasUUID(playerName)) {
+        UUID targetUUID = UtilPlayer.getUUID(playerName);
+
+        if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
                     .replace("%player%", playerName)));
             return 0;
@@ -592,22 +627,18 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
-
         if (playerUUID.equals(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotYourself()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        if (warp.getInvitePlayers().contains(targetUUID)) {
+        if (!warp.addInvitePlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
                     .replace("%player%", playerName)));
             return 0;
         }
-
-        warp.addInvitePlayer(targetUUID);
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getInviteWarp()
                 .replace("%warp%", warp.getName())
@@ -619,7 +650,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeUnInvite(String name, String playerName, ServerPlayer player) {
+    private static int executeUnInvite(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -629,21 +660,19 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!UtilPlayer.hasUUID(playerName)) {
+        UUID targetUUID = UtilPlayer.getUUID(playerName);
+
+        if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
                     .replace("%player%", playerName)));
             return 0;
         }
 
-        UUID playerUUID = player.getUUID();
-
-        if (!warp.getOwnerUUID().equals(playerUUID)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
-
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
 
         if (player.getUUID().equals(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotYourself()
@@ -651,14 +680,12 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!warp.getInvitePlayers().contains(targetUUID)) {
+        if (!warp.removeInvitePlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
                     .replace("%player%", playerName)));
             return 0;
         }
-
-        warp.removeInvitePlayer(targetUUID);
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getUnInviteWarp()
                 .replace("%warp%", warp.getName())
@@ -666,7 +693,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeAddBlacklist(String name, String playerName, ServerPlayer player) {
+    private static int executeAddBlacklist(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -676,36 +703,32 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!UtilPlayer.hasUUID(playerName)) {
+        UUID targetUUID = UtilPlayer.getUUID(playerName);
+
+        if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
                     .replace("%player%", playerName)));
             return 0;
         }
 
-        UUID playerUUID = player.getUUID();
-
-        if (!warp.getOwnerUUID().equals(playerUUID)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
-
-        if (playerUUID.equals(targetUUID)) {
+        if (player.getUUID().equals(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotYourself()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        if (warp.getBlacklistPlayers().contains(targetUUID)) {
+        if (!warp.addBlacklistPlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
                     .replace("%player%", playerName)));
             return 0;
         }
-
-        warp.addBlacklistPlayer(targetUUID);
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getBlacklistAddedWarp()
                 .replace("%warp%", warp.getName())
@@ -713,7 +736,7 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeRemoveBlacklist(String name, String playerName, ServerPlayer player) {
+    private static int executeRemoveBlacklist(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -723,36 +746,32 @@ public class WarpCommand {
             return 0;
         }
 
-        if (!UtilPlayer.hasUUID(playerName)) {
+        UUID targetUUID = UtilPlayer.getUUID(playerName);
+
+        if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
                     .replace("%player%", playerName)));
             return 0;
         }
 
-        UUID playerUUID = player.getUUID();
-
-        if (!warp.getOwnerUUID().equals(playerUUID)) {
+        if (!warp.getOwnerUUID().equals(player.getUUID())) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
-
-        if (playerUUID.equals(targetUUID)) {
+        if (player.getUUID().equals(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotYourself()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
-        if (!warp.getBlacklistPlayers().contains(targetUUID)) {
+        if (!warp.removeBlacklistPlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
                     .replace("%player%", playerName)));
             return 0;
         }
-
-        warp.removeBlacklistPlayer(targetUUID);
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getBlacklistRemovedWarp()
                 .replace("%warp%", warp.getName())
@@ -760,83 +779,85 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeAssets(ServerPlayer player) {
+    private static int executeAssets(@NotNull ServerPlayer player) {
         Set<Warp> warps = ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID());
-        Set<Warp> publicWarps = new HashSet<>();
-        Set<Warp> privateWarps = new HashSet<>();
 
-        for (Warp warp : warps) {
-            if (!warp.isLocked()) {
-                publicWarps.add(warp);
-            } else {
-                privateWarps.add(warp);
-            }
-        }
+        String publicWarps = warps.stream()
+                .filter(warp -> !warp.isLocked())
+                .map(Warp::getName)
+                .sorted()
+                .collect(Collectors.joining(", "));
+
+        String privateWarps = warps.stream()
+                .filter(Warp::isLocked)
+                .map(Warp::getName)
+                .sorted()
+                .collect(Collectors.joining(", "));
 
         player.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getWarpAssets()
                 .replace("%count%", String.valueOf(warps.size()))
                 .replace("%maxCount%", String.valueOf(Utils.maxCountWarp(player)))
-                .replace("%publicWarps%", publicWarps.stream().map(Warp::getName).collect(Collectors.joining(", ")))
-                .replace("%privateWarps%", privateWarps.stream().map(Warp::getName).collect(Collectors.joining(", ")))));
+                .replace("%publicWarps%", publicWarps)
+                .replace("%privateWarps%", privateWarps)));
         return 1;
     }
 
-    private static int executeAssetsPlayer(CommandSourceStack source, String playerName) {
+    private static int executeAssetsPlayer(@NotNull CommandSourceStack source, @NotNull String playerName) {
+        UUID targetUUID = UtilPlayer.getUUID(playerName);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
-        if (!UtilPlayer.hasUUID(playerName)) {
+        if (targetUUID == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
                     .replace("%player%", playerName)));
             return 0;
         }
 
-        UUID playerUUID = UtilPlayer.getUUID(playerName);
+        Set<Warp> warps = ExtraWarpFactory.WarpProvider.getWarpsByPlayer(targetUUID);
 
-        Set<Warp> warps = ExtraWarpFactory.WarpProvider.getWarpsByPlayer(playerUUID);
-        Set<Warp> publicWarps = new HashSet<>();
-        Set<Warp> privateWarps = new HashSet<>();
+        String publicWarps = warps.stream()
+                .filter(warp -> !warp.isLocked())
+                .map(Warp::getName)
+                .sorted()
+                .collect(Collectors.joining(", "));
 
-        for (Warp warp : warps) {
-            if (!warp.isLocked()) {
-                publicWarps.add(warp);
-            } else {
-                privateWarps.add(warp);
-            }
-        }
+        String privateWarps = warps.stream()
+                .filter(Warp::isLocked)
+                .map(Warp::getName)
+                .sorted()
+                .collect(Collectors.joining(", "));
 
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpAssetsPlayer()
-                .replace("%player%", UtilPlayer.getPlayerName(playerUUID))
-                .replace("%publicWarps%", publicWarps.stream().map(Warp::getName).collect(Collectors.joining(", ")))
-                .replace("%privateWarps%", privateWarps.stream().map(Warp::getName).collect(Collectors.joining(", ")))));
+                .replace("%player%", playerName)
+                .replace("%publicWarps%", publicWarps)
+                .replace("%privateWarps%", privateWarps)));
         return 1;
     }
 
-    private static int executeTop(CommandSourceStack source) {
+    private static int executeTop(@NotNull CommandSourceStack source) {
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
-        List<Warp> warps = new ArrayList<>(ExtraWarpFactory.WarpProvider.getWarps());
-        warps.sort(Comparator.comparingInt(Warp::getUniquePlayersCount).reversed());
+        List<Warp> topWarps = ExtraWarpFactory.WarpProvider.getWarps().stream()
+                .filter(warp -> !warp.isLocked())
+                .sorted(Comparator.comparingInt((Warp warp) -> warp.getUniquePlayers().size()).reversed())
+                .limit(10)
+                .toList();
 
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getTopWarpTitle()));
 
-        int count = 0;
-        for (Warp warp : warps) {
-            if (warp.isLocked()) {
-                continue;
-            }
+        for (int i = 0; i < topWarps.size(); i++) {
+            Warp warp = topWarps.get(i);
 
             source.sendSystemMessage(UtilChat.clickableMessageCommand(localeConfig.getTopWarp()
-                    .replace("%place%", localeConfig.getPlaces().get(count))
+                    .replace("%place%", localeConfig.getPlaces().get(i))
                     .replace("%warp%", warp.getName())
-                    .replace("%player%", UtilPlayer.getPlayerName(warp.getOwnerUUID())), "/warp " + warp.getName()).copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, UtilChat.formatMessage(localeConfig.getHoverTopWarp() + warp.getName())))));
-            count++;
-            if (count >= 10) {
-                break;
-            }
+                    .replace("%player%", UtilPlayer.getPlayerName(warp.getOwnerUUID())), "/warp " +
+                    warp.getName()).copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    UtilChat.formatMessage(localeConfig.getHoverTopWarp() + warp.getName())))));
         }
+
         return 1;
     }
 
-    private static int executeSetWelcome(String name, Component component, CommandSourceStack source) {
+    private static int executeSetWelcome(@NotNull String name, Component component, @NotNull CommandSourceStack source) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -846,20 +867,20 @@ public class WarpCommand {
             return 0;
         }
 
-        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID()) && !source.hasPermission(4)) {
+        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID())
+                && !UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS)) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
 
         warp.setWelcomeText(component.getString());
-
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpSetWelcome()
                 .replace("%warp%", warp.getName())));
         return 1;
     }
 
-    private static int executeRemoveWelcome(String name, CommandSourceStack source) {
+    private static int executeRemoveWelcome(@NotNull String name, @NotNull CommandSourceStack source) {
         Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
         LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
 
@@ -869,7 +890,8 @@ public class WarpCommand {
             return 0;
         }
 
-        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID()) && !source.hasPermission(4)) {
+        if (source.getEntity() != null && !warp.getOwnerUUID().equals(source.getEntity().getUUID())
+                && !UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS)) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotOwner()
                     .replace("%warp%", warp.getName())));
             return 0;
@@ -881,20 +903,20 @@ public class WarpCommand {
             return 0;
         }
 
-        warp.setWelcomeText("");
-
+        warp.setWelcomeText(null);
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpRemoveWelcome()
                 .replace("%warp%", warp.getName())));
         return 1;
     }
 
-    private static int executeHelp(CommandSourceStack source) {
+    private static int executeHelp(@NotNull CommandSourceStack source) {
         source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getHelp()));
         return 1;
     }
 
-    private static int executeReload(CommandSourceStack source) {
+    private static int executeReload(@NotNull CommandSourceStack source) {
         ExtraWarp.getInstance().loadConfig();
+        ExtraWarp.getInstance().loadStorage();
 
         source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getReload()));
         return 1;

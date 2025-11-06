@@ -7,7 +7,6 @@ import com.vecoo.extrawarp.storage.warp.WarpProvider;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
@@ -20,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 @Mod(ExtraWarp.MOD_ID)
 public class ExtraWarp {
     public static final String MOD_ID = "extrawarp";
-    private static final Logger LOGGER = LogManager.getLogger("ExtraWarp");
+    private static final Logger LOGGER = LogManager.getLogger();
 
     private static ExtraWarp instance;
 
@@ -66,13 +65,14 @@ public class ExtraWarp {
         PermissionAPI.registerNode("minecraft.command.warp.top", DefaultPermissionLevel.OP, "");
         PermissionAPI.registerNode("minecraft.command.warp.info", DefaultPermissionLevel.OP, "");
         PermissionAPI.registerNode("minecraft.command.warp.update", DefaultPermissionLevel.OP, "");
+        PermissionAPI.registerNode("extrawarp.bypass", DefaultPermissionLevel.OP, "");
 
         for (String node : this.config.getPermissionListingList()) {
             PermissionAPI.registerNode(node, DefaultPermissionLevel.OP, "");
         }
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SubscribeEvent
     public void onServerStopping(FMLServerStoppingEvent event) {
         this.warpProvider.write();
     }
@@ -84,16 +84,19 @@ public class ExtraWarp {
             this.locale = new LocaleConfig();
             this.locale.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load config.", e);
+            LOGGER.error("Error load config.", e);
         }
     }
 
     public void loadStorage() {
         try {
-            this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            if (this.warpProvider == null) {
+                this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            }
+
             this.warpProvider.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load storage.", e);
+            LOGGER.error("Error load storage.", e);
         }
     }
 

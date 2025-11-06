@@ -1,14 +1,15 @@
 package com.vecoo.extrawarp.config;
 
+import com.google.common.collect.Sets;
 import com.vecoo.extralib.gson.UtilGson;
+import com.vecoo.extrawarp.ExtraWarp;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 public class ServerConfig {
     private int baseCountWarp = 2;
     private int maxMaxCharactersWarp = 10;
-    private List<String> permissionListingList = Arrays.asList("extrawarp.count.3", "extrawarp.count.5", "extrawarp.count.7");
+    private Set<String> permissionListingList = Sets.newHashSet("extrawarp.count.3", "extrawarp.count.5", "extrawarp.count.7");
 
     public int getBaseCountWarp() {
         return this.baseCountWarp;
@@ -18,7 +19,7 @@ public class ServerConfig {
         return this.maxMaxCharactersWarp;
     }
 
-    public List<String> getPermissionListingList() {
+    public Set<String> getPermissionListingList() {
         return this.permissionListingList;
     }
 
@@ -36,6 +37,7 @@ public class ServerConfig {
         }).join();
 
         if (!completed) {
+            ExtraWarp.getLogger().error("Failed init config.");
             write();
         }
     }

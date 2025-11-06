@@ -1,3 +1,9 @@
-* Data is now saved once every few seconds.
-* Warps no longer have UUIDs.
-* Minor changes.
+* Update logger.
+* Update find position warp.
+* Added annotations.
+* Update depends.
+* Update warp storage.
+* Added permission warp bypass.
+* Added hide position locked warp.
+* Fixes bug.
+* Optimization.

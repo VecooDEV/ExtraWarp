@@ -11,13 +11,6 @@ authors = "Vecoo"
 description = "Mod adding warp system."
 
 [[dependencies.extrawarp]]
-modId = "forge"
-mandatory = true
-versionRange = "[43,)"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.extrawarp]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.19,)"
@@ -25,8 +18,15 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.extrawarp]]
+modId = "forge"
+mandatory = true
+versionRange = "[43,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.extrawarp]]
 modId = "extralib"
 mandatory = true
-versionRange = "[1.7,)"
+versionRange = "[1.8,)"
 ordering = "NONE"
 side = "BOTH"

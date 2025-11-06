@@ -1,6 +1,6 @@
 package com.vecoo.extrawarp;
 
-import com.vecoo.extralib.permission.UtilPermission;
+import com.mojang.logging.LogUtils;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;
 import com.vecoo.extrawarp.config.ServerConfig;
@@ -11,18 +11,15 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.permission.events.PermissionGatherEvent;
-import net.minecraftforge.server.permission.nodes.PermissionNode;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 @Mod(ExtraWarp.MOD_ID)
 public class ExtraWarp {
     public static final String MOD_ID = "extrawarp";
-    private static final Logger LOGGER = LogManager.getLogger("ExtraWarp");
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static ExtraWarp instance;
 
@@ -43,36 +40,7 @@ public class ExtraWarp {
 
     @SubscribeEvent
     public void onPermissionGather(PermissionGatherEvent.Nodes event) {
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_ASSETS_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_ASSETS_PLAYER_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_INFO_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_RELOAD_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_TOP_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_UPDATE_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.PRIVATE_WARP_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_BLACKLIST_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_INVITE_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_SET_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_WELCOME_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_RENAME_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_PUBLIC_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_UNINVITE_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_PRIVATE_COMMAND);
-        PermissionNodes.permissionList.add(PermissionNodes.WARP_DELETE_COMMAND);
-
-        for (String node : config.getPermissionListingList()) {
-            PermissionNode<Boolean> permissionNode = UtilPermission.getPermissionNode(node);
-
-            PermissionNodes.permissionList.add(permissionNode);
-            PermissionNodes.permissionListModify.add(permissionNode);
-        }
-
-        for (PermissionNode<?> node : PermissionNodes.permissionList) {
-            if (!event.getNodes().contains(node)) {
-                event.addNodes(node);
-            }
-        }
+        PermissionNodes.registerPermission(event);
     }
 
     @SubscribeEvent
@@ -86,7 +54,7 @@ public class ExtraWarp {
         loadStorage();
     }
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         this.warpProvider.write();
     }
@@ -98,16 +66,19 @@ public class ExtraWarp {
             this.locale = new LocaleConfig();
             this.locale.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load config.", e);
+            LOGGER.error("Error load config.", e);
         }
     }
 
     public void loadStorage() {
         try {
-            this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            if (this.warpProvider == null) {
+                this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            }
+
             this.warpProvider.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load storage.", e);
+            LOGGER.error("Error load storage.", e);
         }
     }
 

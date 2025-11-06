@@ -1,6 +1,7 @@
 package com.vecoo.extrawarp.config;
 
 import com.vecoo.extralib.gson.UtilGson;
+import com.vecoo.extrawarp.ExtraWarp;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,38 +25,42 @@ public class LocaleConfig {
     private String warpSetWelcome = "&e(!) You have successfully installed a welcome message on warp %warp%.";
     private String warpRemoveWelcome = "&e(!) You have successfully removed the welcome message from the warp %warp%.";
     private String warpRename = "&e(!) You have successfully changed the warp name from %warp% to %name%.";
-    private String help = "&eInformation the ExtraWarp:\n" +
-            "/warp help - help with the ExtraWarp mod.\n" +
-            "/warp <name> - teleport to warp.\n" +
-            "/warp set <name> - set public warp at your position.\n" +
-            "/warp pset <name> - set private warp at your position.\n" +
-            "/warp delete <name> - delete your warp.\n" +
-            "/warp private <name> - make your warp private.\n" +
-            "/warp public <name> - make your warp public.\n" +
-            "/warp invite <name> <player> - invite a player to your warp.\n" +
-            "/warp uninvite <name> <player> - revoke an invitation to your warp.\n" +
-            "/warp blacklist add <name> <player> - add a player to your warp's blacklist.\n" +
-            "/warp blacklist remove <name> <player> - remove a player from your warp's blacklist.\n" +
-            "/warp rename <name> <newName> - rename your warp.\n" +
-            "/warp welcome - remove the welcome message from your warp.\n" +
-            "/warp welcome <message> - add a welcome message to your warp.\n" +
-            "/warp info <name> - view information about the warp.\n" +
-            "/warp update <name> - update the position of your warp.\n" +
-            "/warp assets - list of your warps.\n" +
-            "/warp top - list of popular warp";
+    private String help = """
+            &eInformation the ExtraWarp:
+            /warp help - help with the ExtraWarp mod.
+            /warp <name> - teleport to warp.
+            /warp set <name> - set public warp at your position.
+            /warp pset <name> - set private warp at your position.
+            /warp delete <name> - delete your warp.
+            /warp private <name> - make your warp private.
+            /warp public <name> - make your warp public.
+            /warp invite <name> <player> - invite a player to your warp.
+            /warp uninvite <name> <player> - revoke an invitation to your warp.
+            /warp blacklist add <name> <player> - add a player to your warp's blacklist.
+            /warp blacklist remove <name> <player> - remove a player from your warp's blacklist.
+            /warp rename <name> <newName> - rename your warp.
+            /warp welcome - remove the welcome message from your warp.
+            /warp welcome <message> - add a welcome message to your warp.
+            /warp info <name> - view information about the warp.
+            /warp update <name> - update the position of your warp.
+            /warp assets - list of your warps.
+            /warp top - list of popular warp""";
     private String topWarpTitle = "&e&lTop warps:";
-    private String warpAssets = "&e&lYour warps (%count%/%maxCount%):\n" +
-            "&r&e- Public: %publicWarps%\n" +
-            "&e- Private: %privateWarps%";
-    private String warpAssetsPlayer = "&e&lWarps player %player%:\n" +
-            "&r&e- Public: %publicWarps%\n" +
-            "&e- Private: %privateWarps%";
-    private String infoWarp = "&e&lInfo warp %warp% (%locked%):\n" +
-            "&r&e- Owner: %owner%\n" +
-            "- X: %x%, Y: %y%, Z: %z% (%dimension%&e)\n" +
-            "- Invite players: %invitePlayers%\n" +
-            "- Blacklist players: %blacklistPlayers%\n" +
-            "- Unique players: %count%";
+    private String warpAssets = """
+            &e&lYour warps (%count%/%maxCount%):
+            &r&e- Public: %publicWarps%
+            &e- Private: %privateWarps%""";
+    private String warpAssetsPlayer = """
+            &e&lWarps player %player%:
+            &r&e- Public: %publicWarps%
+            &e- Private: %privateWarps%""";
+    private String infoWarp = """
+            &e&lInfo warp %warp% (%locked%&e&l):
+            &r&e- Owner: %owner%
+            - X: %x%, Y: %y%, Z: %z% (%dimension%&e)
+            - Invite players: %invitePlayers%
+            - Blacklist players: %blacklistPlayers%
+            - Unique players: %count%""";
 
     private String warpNotOwner = "&c(!) You are not the owner of the warp %warp%.";
     private String warpNotFound = "&c(!) Warp %warp% not found.";
@@ -330,6 +335,7 @@ public class LocaleConfig {
         }).join();
 
         if (!completed) {
+            ExtraWarp.getLogger().error("Failed init locale config.");
             write();
         }
     }

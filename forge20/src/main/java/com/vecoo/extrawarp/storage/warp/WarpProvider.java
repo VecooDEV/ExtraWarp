@@ -5,6 +5,7 @@ import com.vecoo.extralib.task.TaskTimer;
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import net.minecraft.server.MinecraftServer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,31 +14,41 @@ public class WarpProvider {
     private transient final String filePath;
     private final Set<Warp> warps;
 
-    public WarpProvider(String filePath, MinecraftServer server) {
+    private transient boolean intervalStarted = false;
+    private transient volatile boolean dirty = false;
+
+    public WarpProvider(@NotNull String filePath, @NotNull MinecraftServer server) {
         this.filePath = UtilWorld.worldDirectory(filePath, server);
 
         this.warps = new HashSet<>();
     }
 
+    @NotNull
     public Set<Warp> getStorage() {
         return this.warps;
     }
 
-    public boolean addWarp(Warp warp) {
+    public void updateStorage() {
+        this.dirty = true;
+    }
+
+    public boolean addWarp(@NotNull Warp warp) {
         if (!this.warps.add(warp)) {
-            ExtraWarp.getLogger().error("[ExtraWarp] An error occurred while creating the warp: " + warp.getName());
+            ExtraWarp.getLogger().error("An error occurred while creating the warp: " + warp.getName());
             return false;
         }
 
+        this.dirty = true;
         return true;
     }
 
-    public boolean removeWarp(Warp warp) {
+    public boolean removeWarp(@NotNull Warp warp) {
         if (!this.warps.remove(warp)) {
-            ExtraWarp.getLogger().error("[ExtraWarp] An error occurred while remove the warp: " + warp.getName());
+            ExtraWarp.getLogger().error("An error occurred while remove the warp: " + warp.getName());
             return false;
         }
 
+        this.dirty = true;
         return true;
     }
 
@@ -46,20 +57,28 @@ public class WarpProvider {
     }
 
     private void writeInterval() {
-        TaskTimer.builder()
-                .withoutDelay()
-                .interval(90 * 20L)
-                .infinite()
-                .consume(task -> {
-                    if (ExtraWarp.getInstance().getServer().isRunning()) {
-                        UtilGson.writeFileAsync(this.filePath, "WarpStorage.json", UtilGson.newGson().toJson(this));
-                    }
-                })
-                .build();
+        if (!this.intervalStarted) {
+            TaskTimer.builder()
+                    .withoutDelay()
+                    .interval(150 * 20L)
+                    .infinite()
+                    .consume(task -> {
+                        if (ExtraWarp.getInstance().getServer().isRunning() && this.dirty) {
+                            UtilGson.writeFileAsync(this.filePath, "WarpStorage.json",
+                                    UtilGson.newGson().toJson(this)).thenRun(() -> this.dirty = false);
+                        }
+                    })
+                    .build();
+
+
+            this.intervalStarted = true;
+        }
     }
 
     public void init() {
-        UtilGson.readFileAsync(this.filePath, "WarpStorage.json", el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getStorage())).join();
+        UtilGson.readFileAsync(this.filePath, "WarpStorage.json",
+                el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getStorage())).join();
+
         writeInterval();
     }
 }

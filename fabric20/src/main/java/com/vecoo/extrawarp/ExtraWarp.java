@@ -1,5 +1,6 @@
 package com.vecoo.extrawarp;
 
+import com.mojang.logging.LogUtils;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;
 import com.vecoo.extrawarp.config.ServerConfig;
@@ -8,12 +9,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 public class ExtraWarp implements ModInitializer {
     public static final String MOD_ID = "extrawarp";
-    private static final Logger LOGGER = LogManager.getLogger("ExtraWarp");
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static ExtraWarp instance;
 
@@ -45,16 +45,19 @@ public class ExtraWarp implements ModInitializer {
             this.locale = new LocaleConfig();
             this.locale.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load config.", e);
+            LOGGER.error("Error load config.", e);
         }
     }
 
     public void loadStorage() {
         try {
-            this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            if (this.warpProvider == null) {
+                this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
+            }
+
             this.warpProvider.init();
         } catch (Exception e) {
-            LOGGER.error("[ExtraWarp] Error load storage.", e);
+            LOGGER.error("Error load storage.", e);
         }
     }
 

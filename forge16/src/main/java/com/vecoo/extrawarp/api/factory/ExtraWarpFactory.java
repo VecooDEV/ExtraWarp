@@ -14,12 +14,14 @@ import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.MinecraftForge;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 public class ExtraWarpFactory {
-    public static boolean teleportWarp(ServerPlayerEntity player, Warp warp) {
+    public static boolean teleportWarp(@Nonnull ServerPlayerEntity player, @Nonnull Warp warp) {
         ServerWorld world = UtilWorld.getWorldByName(warp.getDimensionName());
 
         if (world == null) {
@@ -45,14 +47,15 @@ public class ExtraWarpFactory {
         return true;
     }
 
-    private static BlockPos.Mutable findPosition(BlockPos.Mutable blockPos, ServerWorld world) {
+    @Nullable
+    private static BlockPos.Mutable findPosition(@Nonnull BlockPos.Mutable blockPos, @Nonnull ServerWorld world) {
         IChunk chunk = world.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
 
         if (chunk == null) {
             return null;
         }
 
-        while (blockPos.getY() > -1) {
+        while (blockPos.getY() > 1) {
             if (!chunk.getBlockState(blockPos).is(Blocks.AIR)) {
                 break;
             }
@@ -60,7 +63,7 @@ public class ExtraWarpFactory {
             blockPos.move(Direction.DOWN);
         }
 
-        if (blockPos.getY() == -1) {
+        if (blockPos.getY() <= 1) {
             return null;
         }
 
@@ -72,11 +75,12 @@ public class ExtraWarpFactory {
     }
 
     public static class WarpProvider {
+        @Nonnull
         public static Set<Warp> getWarps() {
             return ExtraWarp.getInstance().getWarpProvider().getStorage();
         }
 
-        public static boolean hasWarpByName(String warpName) {
+        public static boolean hasWarpByName(@Nonnull String warpName) {
             for (Warp warp : getWarps()) {
                 if (warp.getName().equalsIgnoreCase(warpName)) {
                     return true;
@@ -86,7 +90,8 @@ public class ExtraWarpFactory {
             return false;
         }
 
-        public static Warp getWarpByName(String warpName) {
+        @Nullable
+        public static Warp getWarpByName(@Nonnull String warpName) {
             for (Warp warp : getWarps()) {
                 if (warp.getName().equalsIgnoreCase(warpName)) {
                     return warp;
@@ -96,7 +101,8 @@ public class ExtraWarpFactory {
             return null;
         }
 
-        public static Set<Warp> getWarpsByPlayer(UUID playerUUID) {
+        @Nonnull
+        public static Set<Warp> getWarpsByPlayer(@Nonnull UUID playerUUID) {
             Set<Warp> warps = new HashSet<>();
 
             for (Warp warp : getWarps()) {
@@ -108,11 +114,11 @@ public class ExtraWarpFactory {
             return warps;
         }
 
-        public static boolean addWarp(Warp warp) {
+        public static boolean addWarp(@Nonnull Warp warp) {
             return ExtraWarp.getInstance().getWarpProvider().addWarp(warp);
         }
 
-        public static boolean removeWarp(Warp warp) {
+        public static boolean removeWarp(@Nonnull Warp warp) {
             return ExtraWarp.getInstance().getWarpProvider().removeWarp(warp);
         }
     }
