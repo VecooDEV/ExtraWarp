@@ -283,7 +283,7 @@ public class WarpCommand {
         ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
 
         if (level == null) {
-            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpError()
+            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotDimension()
                     .replace("%warp%", warp.getName())));
             return 0;
         }
@@ -480,7 +480,7 @@ public class WarpCommand {
         ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
 
         if (level == null) {
-            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpError()
+            player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotDimension()
                     .replace("%warp%", warp.getName())));
             return 0;
         }

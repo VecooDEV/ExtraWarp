@@ -18,6 +18,6 @@ public class Utils {
                 "blacklist", "public", "rename", "welcome", "help", "reload", "assets", "info", "update");
         blockedNamesWarp.addAll(ExtraWarp.getInstance().getConfig().getBlockedNamesWarp());
 
-        return blockedNamesWarp.contains(warpName);
+        return blockedNamesWarp.contains(warpName.toLowerCase());
     }
 }
