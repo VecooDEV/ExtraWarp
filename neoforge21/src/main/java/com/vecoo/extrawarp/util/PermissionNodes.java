@@ -52,7 +52,7 @@ public class PermissionNodes {
         PERMISSION_LIST.add(WARP_UPDATE_COMMAND);
         PERMISSION_LIST.add(WARP_BYPASS);
 
-        for (String node : ExtraWarp.getInstance().getConfig().getPermissionListingList()) {
+        for (String node : ExtraWarp.getInstance().getConfig().getPermissionList()) {
             PermissionNode<Boolean> permissionNode = UtilPermission.getPermissionNode(node);
 
             PERMISSION_LIST.add(permissionNode);

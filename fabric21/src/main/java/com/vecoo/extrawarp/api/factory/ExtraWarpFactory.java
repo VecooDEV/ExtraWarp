@@ -56,7 +56,7 @@ public class ExtraWarpFactory {
             blockPos.move(Direction.DOWN);
         }
 
-        if (blockPos.getY() <= level.getMinBuildHeight()) {
+        if (blockPos.getY() < level.getMinBuildHeight()) {
             return null;
         }
 

@@ -7,8 +7,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LocaleConfig {
-    private String reload = "&e(!) Configs have been reloaded.";
+    private static final int CURRENT_CONFIG_VERSION = 1;
 
+    private int configVersion = 1;
+
+    private String reload = "&e(!) Configs have been reloaded.";
     private String setWarp = "&e(!) You have successfully set warp %warp%.";
     private String setWarpAdditional = " &eClick me to private warp.";
     private String setWarpPrivate = "&e(!) You have successfully set private warp %warp%.";
@@ -75,7 +78,7 @@ public class LocaleConfig {
     private String blacklistWarp = "&c(!) You are on warp %warp% blacklist.";
     private String warpPlayerAlready = "&c(!) Player %player% is already on one of the warp %warp% lists.";
     private String warpError = "&c(!) Error teleporting to warp %warp%. Try again or ask the warp owner to change the respawn point.";
-    private String playerNotFound = "&c(!) Player %player not found.";
+    private String playerNotFound = "&c(!) Player %player% not found.";
     private String equalsRename = "&c(!) You cannot change the name of the warp %warp% because it is the same as what you plan to rename it to.";
     private String invalidWarpArgument = "&c(!) Your warp cannot contain arguments to the command itself in its name.";
     private String warpMaxCharacters = "&c(!) Your warp cannot contain more than 10 characters.";
@@ -88,6 +91,10 @@ public class LocaleConfig {
     private String addWelcome = "&e(!) ";
     private String locked = "&4Private&r&l";
     private String unlocked = "&2Public&r&l";
+
+    public int getConfigVersion() {
+        return this.configVersion;
+    }
 
     public String getReload() {
         return this.reload;
@@ -285,6 +292,7 @@ public class LocaleConfig {
         boolean completed = UtilGson.readFileAsync("/config/ExtraWarp/", "locale.json", el -> {
             LocaleConfig config = UtilGson.newGson().fromJson(el, LocaleConfig.class);
 
+            this.configVersion = config.getConfigVersion();
             this.reload = config.getReload();
             this.teleportWarp = config.getTeleportWarp();
             this.setWarp = config.getSetWarp();
@@ -335,7 +343,7 @@ public class LocaleConfig {
         }).join();
 
         if (!completed) {
-            ExtraWarp.getLogger().error("Failed init locale config.");
+            ExtraWarp.getLogger().error("Error init locale config, generating new locale config.");
             write();
         }
     }
