@@ -1,2 +1,3 @@
-* Fixes warp names blacklist.
-* Change message not dimension.
+* Update gradle depends.
+* Need ExtraLib 1.8.7+.
+* Minor changes.

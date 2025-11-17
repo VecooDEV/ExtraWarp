@@ -10,7 +10,6 @@ public class LocaleConfig {
     private static final int CURRENT_CONFIG_VERSION = 1;
 
     private int configVersion = 1;
-
     private String reload = "&e(!) Configs have been reloaded.";
     private String setWarp = "&e(!) You have successfully set warp %warp%.";
     private String setWarpAdditional = " &eClick me to private warp.";

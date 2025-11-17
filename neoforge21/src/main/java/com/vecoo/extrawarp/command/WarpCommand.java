@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.vecoo.extralib.chat.UtilChat;
 import com.vecoo.extralib.permission.UtilPermission;
 import com.vecoo.extralib.player.UtilPlayer;
+import com.vecoo.extralib.server.UtilCommand;
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import com.vecoo.extrawarp.api.factory.ExtraWarpFactory;
@@ -82,14 +83,7 @@ public class WarpCommand {
                                     return builder.buildFuture();
                                 })
                                 .then(Commands.argument("player", StringArgumentType.string())
-                                        .suggests((s, builder) -> {
-                                            for (String playerName : s.getSource().getOnlinePlayerNames()) {
-                                                if (playerName.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
-                                                    builder.suggest(playerName);
-                                                }
-                                            }
-                                            return builder.buildFuture();
-                                        })
+                                        .suggests(UtilCommand.suggestOnlinePlayers())
                                         .executes(e -> executeInvite(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException())))))
 
                 .then(Commands.literal("uninvite")
@@ -131,14 +125,7 @@ public class WarpCommand {
                                             return builder.buildFuture();
                                         })
                                         .then(Commands.argument("player", StringArgumentType.string())
-                                                .suggests((s, builder) -> {
-                                                    for (String playerName : s.getSource().getOnlinePlayerNames()) {
-                                                        if (playerName.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
-                                                            builder.suggest(playerName);
-                                                        }
-                                                    }
-                                                    return builder.buildFuture();
-                                                })
+                                                .suggests(UtilCommand.suggestOnlinePlayers())
                                                 .executes(e -> executeAddBlacklist(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException())))))
 
                         .then(Commands.literal("remove")
@@ -220,14 +207,7 @@ public class WarpCommand {
                         .executes(e -> executeAssets(e.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", StringArgumentType.string())
                                 .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_PLAYER_COMMAND))
-                                .suggests((s, builder) -> {
-                                    for (String playerName : s.getSource().getOnlinePlayerNames()) {
-                                        if (playerName.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
-                                            builder.suggest(playerName);
-                                        }
-                                    }
-                                    return builder.buildFuture();
-                                })
+                                .suggests(UtilCommand.suggestOnlinePlayers())
                                 .executes(e -> executeAssetsPlayer(e.getSource(), StringArgumentType.getString(e, "player")))))
 
                 .then(Commands.literal("top")
@@ -263,8 +243,6 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID playerUUID = player.getUUID();
-
         if (!isPlayerInvitedWarp(player, warp)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPrivate()
                     .replace("%warp%", name)));
@@ -297,7 +275,7 @@ public class WarpCommand {
             return 0;
         }
 
-        warp.addUniquePlayer(playerUUID);
+        warp.addUniquePlayer(player.getUUID());
 
         if (warp.getWelcomeText().isEmpty()) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getTeleportWarp()
@@ -440,7 +418,7 @@ public class WarpCommand {
 
         ServerPlayer player = source.getPlayer();
         boolean hideXYZ = warp.isLocked() && player != null && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS)
-                && !warp.getOwnerUUID().equals(player.getUUID()) && !warp.getInvitePlayers().contains(player.getUUID());
+                          && !warp.getOwnerUUID().equals(player.getUUID()) && !warp.getInvitePlayers().contains(player.getUUID());
 
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getInfoWarp()
                 .replace("%warp%", warp.getName())
@@ -828,10 +806,10 @@ public class WarpCommand {
             Warp warp = topWarps.get(i);
 
             source.sendSystemMessage(UtilChat.clickableMessageCommand(localeConfig.getTopWarp()
-                    .replace("%place%", localeConfig.getPlaces().get(i))
-                    .replace("%warp%", warp.getName())
-                    .replace("%player%", UtilPlayer.getPlayerName(warp.getOwnerUUID())), "/warp " +
-                    warp.getName()).copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            .replace("%place%", localeConfig.getPlaces().get(i))
+                            .replace("%warp%", warp.getName())
+                            .replace("%player%", UtilPlayer.getPlayerName(warp.getOwnerUUID())),
+                    "/warp " + warp.getName()).copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                     UtilChat.formatMessage(localeConfig.getHoverTopWarp() + warp.getName())))));
         }
 
@@ -907,17 +885,17 @@ public class WarpCommand {
 
     private static boolean isPlayerInvitedWarp(@NotNull ServerPlayer player, @NotNull Warp warp) {
         return !warp.isLocked() || warp.getOwnerUUID().equals(player.getUUID()) || warp.getInvitePlayers().contains(player.getUUID())
-                || UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS);
+               || UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS);
     }
 
     private static boolean isLimitWarp(@NotNull ServerPlayer player, int maxCount) {
         return ExtraWarpFactory.WarpProvider.getWarpsByPlayer(player.getUUID()).size() >= maxCount
-                && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS);
+               && !UtilPermission.hasPermission(player, PermissionNodes.WARP_BYPASS);
     }
 
     private static boolean isWarpOwner(@NotNull CommandSourceStack source, @NotNull Warp warp) {
         return source.getEntity() == null || warp.getOwnerUUID().equals(source.getEntity().getUUID())
-                || UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS);
+               || UtilPermission.hasPermission(source, PermissionNodes.WARP_BYPASS);
     }
 
     private static boolean isWarpOwner(@NotNull ServerPlayer player, @NotNull Warp warp) {
@@ -926,6 +904,6 @@ public class WarpCommand {
 
     private static boolean isWarpBeyondWorld(@NotNull Warp warp, @NotNull Level level) {
         return warp.getX() >= level.getWorldBorder().getMaxX() || warp.getY() < level.getMinBuildHeight() ||
-                warp.getY() > level.getMaxBuildHeight() || warp.getZ() >= level.getWorldBorder().getMaxZ();
+               warp.getY() > level.getMaxBuildHeight() || warp.getZ() >= level.getWorldBorder().getMaxZ();
     }
 }

@@ -73,16 +73,6 @@ public class ExtraWarpFactory {
             return ExtraWarp.getInstance().getWarpProvider().getStorage();
         }
 
-        public static boolean hasWarpByName(@NotNull String warpName) {
-            for (Warp warp : getWarps()) {
-                if (warp.getName().equalsIgnoreCase(warpName)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         @Nullable
         public static Warp getWarpByName(@NotNull String warpName) {
             for (Warp warp : getWarps()) {
@@ -105,6 +95,10 @@ public class ExtraWarpFactory {
             }
 
             return warps;
+        }
+
+        public static boolean hasWarpByName(@NotNull String warpName) {
+            return getWarpByName(warpName) != null;
         }
 
         public static boolean addWarp(@NotNull Warp warp) {
