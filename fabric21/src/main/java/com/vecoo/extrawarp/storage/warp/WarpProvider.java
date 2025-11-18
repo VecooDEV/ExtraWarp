@@ -76,6 +76,8 @@ public class WarpProvider {
     }
 
     public void init() {
+        this.warps.clear();
+
         UtilGson.readFileAsync(this.filePath, "WarpStorage.json",
                 el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getStorage())).join();
 
