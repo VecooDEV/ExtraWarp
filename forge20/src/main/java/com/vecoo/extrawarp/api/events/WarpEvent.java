@@ -1,6 +1,6 @@
 package com.vecoo.extrawarp.api.events;
 
-import com.vecoo.extrawarp.storage.warp.Warp;
+import com.vecoo.extrawarp.storage.Warp;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.eventbus.api.Cancelable;
 import net.minecraftforge.eventbus.api.Event;

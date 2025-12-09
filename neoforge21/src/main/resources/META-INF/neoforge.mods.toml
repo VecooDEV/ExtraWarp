@@ -8,7 +8,7 @@ version = "${project_version}"
 displayName = "${project_name}"
 logoFile = "logo.png"
 authors = "Vecoo"
-description = "Mod adding warp system."
+description = "Mod adds points of movement around the worlds."
 
 [[dependencies.extrawarp]]
 modId = "minecraft"
@@ -27,6 +27,6 @@ side = "BOTH"
 [[dependencies.extrawarp]]
 modId = "extralib"
 type = "required"
-versionRange = "[1.8.8,)"
+versionRange = "[2.0.1,)"
 ordering = "NONE"
 side = "BOTH"

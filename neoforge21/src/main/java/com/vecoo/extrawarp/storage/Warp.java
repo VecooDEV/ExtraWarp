@@ -1,4 +1,4 @@
-package com.vecoo.extrawarp.storage.warp;
+package com.vecoo.extrawarp.storage;
 
 import com.vecoo.extrawarp.ExtraWarp;
 import net.minecraft.server.level.ServerPlayer;
@@ -96,7 +96,7 @@ public class Warp {
 
     public void setName(@NotNull String name) {
         this.name = name;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     public void setCoordinatePosition(double x, double y, double z, float xRot, float yRot) {
@@ -105,7 +105,7 @@ public class Warp {
         this.z = getFormatted(z);
         this.xRot = getFormatted(xRot);
         this.yRot = getFormatted(yRot);
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     public void updatePosition(@NotNull ServerPlayer player) {
@@ -115,12 +115,12 @@ public class Warp {
         this.xRot = getFormatted(player.getXRot());
         this.yRot = getFormatted(player.getYRot());
         this.dimensionName = player.level().dimension().location().getPath();
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     public void setDimensionName(@NotNull String dimensionName) {
         this.dimensionName = dimensionName;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     public boolean addInvitePlayer(@NotNull UUID playerUUID) {
@@ -128,7 +128,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
         return true;
     }
 
@@ -137,7 +137,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
         return true;
     }
 
@@ -146,7 +146,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
         return true;
     }
 
@@ -155,7 +155,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
         return true;
     }
 
@@ -164,18 +164,18 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
         return true;
     }
 
     public void setWelcomeText(@Nullable String text) {
         this.welcomeText = text == null ? "" : text;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpProvider().update();
     }
 
     private double getFormatted(double value) {

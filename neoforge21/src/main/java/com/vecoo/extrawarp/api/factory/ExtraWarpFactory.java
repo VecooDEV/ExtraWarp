@@ -3,7 +3,7 @@ package com.vecoo.extrawarp.api.factory;
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import com.vecoo.extrawarp.api.events.WarpEvent;
-import com.vecoo.extrawarp.storage.warp.Warp;
+import com.vecoo.extrawarp.storage.Warp;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +21,7 @@ import java.util.UUID;
 
 public class ExtraWarpFactory {
     public static boolean teleportWarp(@NotNull ServerPlayer player, @NotNull Warp warp) {
-        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
+        ServerLevel level = UtilWorld.findLevelByName(warp.getDimensionName());
 
         if (level == null) {
             return false;
@@ -76,11 +76,23 @@ public class ExtraWarpFactory {
     public static class WarpProvider {
         @NotNull
         public static Set<Warp> getWarps() {
-            return ExtraWarp.getInstance().getWarpProvider().getStorage();
+            return ExtraWarp.getInstance().getWarpProvider().getWarps();
+        }
+
+        public static boolean hasWarpByName(@NotNull String warpName) {
+            return findWarpByName(warpName) != null;
+        }
+
+        public static boolean addWarp(@NotNull Warp warp) {
+            return ExtraWarp.getInstance().getWarpProvider().addWarp(warp);
+        }
+
+        public static boolean removeWarp(@NotNull Warp warp) {
+            return ExtraWarp.getInstance().getWarpProvider().removeWarp(warp);
         }
 
         @Nullable
-        public static Warp getWarpByName(@NotNull String warpName) {
+        public static Warp findWarpByName(@NotNull String warpName) {
             for (Warp warp : getWarps()) {
                 if (warp.getName().equalsIgnoreCase(warpName)) {
                     return warp;
@@ -101,18 +113,6 @@ public class ExtraWarpFactory {
             }
 
             return warps;
-        }
-
-        public static boolean hasWarpByName(@NotNull String warpName) {
-            return getWarpByName(warpName) != null;
-        }
-
-        public static boolean addWarp(@NotNull Warp warp) {
-            return ExtraWarp.getInstance().getWarpProvider().addWarp(warp);
-        }
-
-        public static boolean removeWarp(@NotNull Warp warp) {
-            return ExtraWarp.getInstance().getWarpProvider().removeWarp(warp);
         }
     }
 }

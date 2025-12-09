@@ -7,9 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class LocaleConfig {
-    private static final int CURRENT_CONFIG_VERSION = 1;
-
-    private int configVersion = 1;
     private String reload = "&e(!) Configs have been reloaded.";
     private String setWarp = "&e(!) You have successfully set warp %warp%.";
     private String setWarpAdditional = " &eClick me to private warp.";
@@ -90,10 +87,6 @@ public class LocaleConfig {
     private String addWelcome = "&e(!) ";
     private String locked = "&4Private&r&l";
     private String unlocked = "&2Public&r&l";
-
-    public int getConfigVersion() {
-        return this.configVersion;
-    }
 
     public String getReload() {
         return this.reload;
@@ -283,15 +276,14 @@ public class LocaleConfig {
         return this.warpPubliced;
     }
 
-    private void write() {
-        UtilGson.writeFileAsync("/config/ExtraWarp/", "locale.json", UtilGson.newGson().toJson(this)).join();
+    private void save() {
+        UtilGson.writeFileAsync("/config/ExtraWarp/", "locale.json", UtilGson.getGson().toJson(this)).join();
     }
 
     public void init() {
         boolean completed = UtilGson.readFileAsync("/config/ExtraWarp/", "locale.json", el -> {
-            LocaleConfig config = UtilGson.newGson().fromJson(el, LocaleConfig.class);
+            LocaleConfig config = UtilGson.getGson().fromJson(el, LocaleConfig.class);
 
-            this.configVersion = config.getConfigVersion();
             this.reload = config.getReload();
             this.teleportWarp = config.getTeleportWarp();
             this.setWarp = config.getSetWarp();
@@ -343,7 +335,7 @@ public class LocaleConfig {
 
         if (!completed) {
             ExtraWarp.getLogger().error("Error init locale config, generating new locale config.");
-            write();
+            save();
         }
     }
 }

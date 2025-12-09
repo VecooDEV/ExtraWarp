@@ -1,4 +1,4 @@
-package com.vecoo.extrawarp.storage.warp;
+package com.vecoo.extrawarp.storage;
 
 import com.vecoo.extralib.gson.UtilGson;
 import com.vecoo.extralib.task.TaskTimer;
@@ -18,23 +18,23 @@ public class WarpProvider {
     private transient volatile boolean dirty = false;
 
     public WarpProvider(@NotNull String filePath, @NotNull MinecraftServer server) {
-        this.filePath = UtilWorld.worldDirectory(filePath, server);
+        this.filePath = UtilWorld.resolveWorldDirectory(filePath, server);
 
         this.warps = new HashSet<>();
     }
 
     @NotNull
-    public Set<Warp> getStorage() {
+    public Set<Warp> getWarps() {
         return this.warps;
     }
 
-    public void updateStorage() {
+    public void update() {
         this.dirty = true;
     }
 
     public boolean addWarp(@NotNull Warp warp) {
         if (!this.warps.add(warp)) {
-            ExtraWarp.getLogger().error("An error occurred while creating the warp: " + warp.getName());
+            ExtraWarp.getLogger().error("An error occurred while creating the warp {}.", warp.getName());
             return false;
         }
 
@@ -44,7 +44,7 @@ public class WarpProvider {
 
     public boolean removeWarp(@NotNull Warp warp) {
         if (!this.warps.remove(warp)) {
-            ExtraWarp.getLogger().error("An error occurred while remove the warp: " + warp.getName());
+            ExtraWarp.getLogger().error("An error occurred while remove the warp {}.", warp.getName());
             return false;
         }
 
@@ -52,11 +52,11 @@ public class WarpProvider {
         return true;
     }
 
-    public void write() {
-        UtilGson.writeFileAsync(this.filePath, "WarpStorage.json", UtilGson.newGson().toJson(this)).join();
+    public void save() {
+        UtilGson.writeFileAsync(this.filePath, "warps.json", UtilGson.getGson().toJson(this)).join();
     }
 
-    private void writeInterval() {
+    private void saveInterval() {
         if (!this.intervalStarted) {
             TaskTimer.builder()
                     .withoutDelay()
@@ -64,8 +64,8 @@ public class WarpProvider {
                     .infinite()
                     .consume(task -> {
                         if (ExtraWarp.getInstance().getServer().isRunning() && this.dirty) {
-                            UtilGson.writeFileAsync(this.filePath, "WarpStorage.json",
-                                    UtilGson.newGson().toJson(this)).thenRun(() -> this.dirty = false);
+                            UtilGson.writeFileAsync(this.filePath, "warps.json",
+                                    UtilGson.getGson().toJson(this)).thenRun(() -> this.dirty = false);
                         }
                     })
                     .build();
@@ -78,9 +78,9 @@ public class WarpProvider {
     public void init() {
         this.warps.clear();
 
-        UtilGson.readFileAsync(this.filePath, "WarpStorage.json",
-                el -> this.warps.addAll(UtilGson.newGson().fromJson(el, WarpProvider.class).getStorage())).join();
+        UtilGson.readFileAsync(this.filePath, "warps.json",
+                el -> this.warps.addAll(UtilGson.getGson().fromJson(el, WarpProvider.class).getWarps())).join();
 
-        writeInterval();
+        saveInterval();
     }
 }

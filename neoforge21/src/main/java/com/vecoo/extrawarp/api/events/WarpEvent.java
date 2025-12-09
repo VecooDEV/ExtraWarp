@@ -1,6 +1,6 @@
 package com.vecoo.extrawarp.api.events;
 
-import com.vecoo.extrawarp.storage.warp.Warp;
+import com.vecoo.extrawarp.storage.Warp;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.ICancellableEvent;

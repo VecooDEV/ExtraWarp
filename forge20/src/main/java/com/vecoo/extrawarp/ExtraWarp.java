@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;
 import com.vecoo.extrawarp.config.ServerConfig;
-import com.vecoo.extrawarp.storage.warp.WarpProvider;
+import com.vecoo.extrawarp.storage.WarpProvider;
 import com.vecoo.extrawarp.util.PermissionNodes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
@@ -24,7 +24,7 @@ public class ExtraWarp {
     private static ExtraWarp instance;
 
     private ServerConfig config;
-    private LocaleConfig locale;
+    private LocaleConfig localeConfig;
 
     private WarpProvider warpProvider;
 
@@ -56,15 +56,15 @@ public class ExtraWarp {
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        this.warpProvider.write();
+        this.warpProvider.save();
     }
 
     public void loadConfig() {
         try {
             this.config = new ServerConfig();
             this.config.init();
-            this.locale = new LocaleConfig();
-            this.locale.init();
+            this.localeConfig = new LocaleConfig();
+            this.localeConfig.init();
         } catch (Exception e) {
             LOGGER.error("Error load config.", e);
         }
@@ -94,8 +94,8 @@ public class ExtraWarp {
         return instance.config;
     }
 
-    public LocaleConfig getLocale() {
-        return instance.locale;
+    public LocaleConfig getLocaleConfig() {
+        return instance.localeConfig;
     }
 
     public WarpProvider getWarpProvider() {

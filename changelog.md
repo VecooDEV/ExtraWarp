@@ -1,1 +1,4 @@
-* The version of the dependent mod is now specified specifically.
+* Update storage.
+* Change name methods.
+* Remove versioned config.
+* Added low permission config (Fabric).

@@ -4,7 +4,7 @@
   "version": "${project_version}",
   "name": "${project_name}",
   "icon": "assets/extrawarp/icon.png",
-  "description": "Mod adding warp system.",
+  "description": "Mod adds points of movement around the worlds.",
   "authors": [
     "Vecoo"
   ],
@@ -20,6 +20,6 @@
     "fabric": "*",
     "minecraft": ">=1.21",
     "java": ">=21",
-    "extralib": ">=1.8.8"
+    "extralib": ">=2.0.1"
   }
 }

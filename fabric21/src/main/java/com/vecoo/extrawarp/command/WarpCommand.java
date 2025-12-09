@@ -10,7 +10,7 @@ import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import com.vecoo.extrawarp.api.factory.ExtraWarpFactory;
 import com.vecoo.extrawarp.config.LocaleConfig;
-import com.vecoo.extrawarp.storage.warp.Warp;
+import com.vecoo.extrawarp.storage.Warp;
 import com.vecoo.extrawarp.util.PermissionNodes;
 import com.vecoo.extrawarp.util.Utils;
 import net.minecraft.commands.CommandBuildContext;
@@ -32,22 +32,22 @@ import java.util.stream.Collectors;
 public class WarpCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, Commands.CommandSelection commandSelection) {
         dispatcher.register(Commands.literal("warp")
-                .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_COMMAND))
+                .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_COMMAND))
                 .then(Commands.argument("name", StringArgumentType.string())
-                        .executes(e -> execute(StringArgumentType.getString(e, "name"), e.getSource().getPlayerOrException())))
+                        .executes(e -> execute(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "name"))))
 
                 .then(Commands.literal("set")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_SET_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_SET_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
-                                .executes(e -> executeSet(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException()))))
+                                .executes(e -> executeSet(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("pset")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.PRIVATE_WARP_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.PRIVATE_WARP_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
-                                .executes(e -> executePrivateSet(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException()))))
+                                .executes(e -> executePrivateSet(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("delete")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_DELETE_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_DELETE_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -57,10 +57,10 @@ public class WarpCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(e -> executeDelete(StringArgumentType.getString(e, "warp"), e.getSource()))))
+                                .executes(e -> executeDelete(e.getSource(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("private")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_PRIVATE_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_PRIVATE_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -70,10 +70,10 @@ public class WarpCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(e -> executePrivate(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException()))))
+                                .executes(e -> executePrivate(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("invite")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_INVITE_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_INVITE_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -85,10 +85,10 @@ public class WarpCommand {
                                 })
                                 .then(Commands.argument("player", StringArgumentType.string())
                                         .suggests(UtilCommand.suggestOnlinePlayers())
-                                        .executes(e -> executeInvite(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException())))))
+                                        .executes(e -> executeInvite(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "player"), StringArgumentType.getString(e, "warp"))))))
 
                 .then(Commands.literal("uninvite")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_UNINVITE_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_UNINVITE_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -111,10 +111,10 @@ public class WarpCommand {
                                             }
                                             return builder.buildFuture();
                                         })
-                                        .executes(e -> executeUnInvite(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException())))))
+                                        .executes(e -> executeUnInvite(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "player"), StringArgumentType.getString(e, "warp"))))))
 
                 .then(Commands.literal("blacklist")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_BLACKLIST_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_BLACKLIST_COMMAND))
                         .then(Commands.literal("add")
                                 .then(Commands.argument("warp", StringArgumentType.string())
                                         .suggests((s, builder) -> {
@@ -127,7 +127,7 @@ public class WarpCommand {
                                         })
                                         .then(Commands.argument("player", StringArgumentType.string())
                                                 .suggests(UtilCommand.suggestOnlinePlayers())
-                                                .executes(e -> executeAddBlacklist(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException())))))
+                                                .executes(e -> executeAddBlacklist(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "player"), StringArgumentType.getString(e, "warp"))))))
 
                         .then(Commands.literal("remove")
                                 .then(Commands.argument("warp", StringArgumentType.string())
@@ -152,10 +152,10 @@ public class WarpCommand {
                                                     }
                                                     return builder.buildFuture();
                                                 })
-                                                .executes(e -> executeRemoveBlacklist(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "player"), e.getSource().getPlayerOrException()))))))
+                                                .executes(e -> executeRemoveBlacklist(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "player"), StringArgumentType.getString(e, "warp")))))))
 
                 .then(Commands.literal("public")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_PUBLIC_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_PUBLIC_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -165,10 +165,10 @@ public class WarpCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(e -> executePublic(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException()))))
+                                .executes(e -> executePublic(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("rename")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_RENAME_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_RENAME_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -179,10 +179,10 @@ public class WarpCommand {
                                     return builder.buildFuture();
                                 })
                                 .then(Commands.argument("name", StringArgumentType.string())
-                                        .executes(e -> executeRename(StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "name"), e.getSource())))))
+                                        .executes(e -> executeRename(e.getSource(), StringArgumentType.getString(e, "warp"), StringArgumentType.getString(e, "name"))))))
 
                 .then(Commands.literal("welcome")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_WELCOME_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_WELCOME_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -192,9 +192,9 @@ public class WarpCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(e -> executeRemoveWelcome(StringArgumentType.getString(e, "warp"), e.getSource()))
+                                .executes(e -> executeRemoveWelcome(e.getSource(), StringArgumentType.getString(e, "warp")))
                                 .then(Commands.argument("message", MessageArgument.message())
-                                        .executes(e -> executeSetWelcome(StringArgumentType.getString(e, "warp"), MessageArgument.getMessage(e, "message"), e.getSource())))))
+                                        .executes(e -> executeSetWelcome(e.getSource(), StringArgumentType.getString(e, "warp"), MessageArgument.getMessage(e, "message"))))))
 
                 .then(Commands.literal("help")
                         .executes(e -> executeHelp(e.getSource())))
@@ -204,7 +204,7 @@ public class WarpCommand {
                         .executes(e -> executeReload(e.getSource())))
 
                 .then(Commands.literal("assets")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_COMMAND))
                         .executes(e -> executeAssets(e.getSource().getPlayerOrException()))
                         .then(Commands.argument("player", StringArgumentType.string())
                                 .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_PLAYER_COMMAND))
@@ -212,16 +212,16 @@ public class WarpCommand {
                                 .executes(e -> executeAssetsPlayer(e.getSource(), StringArgumentType.getString(e, "player")))))
 
                 .then(Commands.literal("top")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_TOP_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_TOP_COMMAND))
                         .executes(e -> executeTop(e.getSource())))
 
                 .then(Commands.literal("info")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_INFO_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_INFO_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
-                                .executes(e -> executeInfo(StringArgumentType.getString(e, "warp"), e.getSource()))))
+                                .executes(e -> executeInfo(e.getSource(), StringArgumentType.getString(e, "warp")))))
 
                 .then(Commands.literal("update")
-                        .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_UPDATE_COMMAND))
+                        .requires(p -> ExtraWarp.getInstance().getConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_UPDATE_COMMAND))
                         .then(Commands.argument("warp", StringArgumentType.string())
                                 .suggests((s, builder) -> {
                                     for (Warp warp : ExtraWarpFactory.WarpProvider.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
@@ -231,12 +231,12 @@ public class WarpCommand {
                                     }
                                     return builder.buildFuture();
                                 })
-                                .executes(e -> executeUpdate(StringArgumentType.getString(e, "warp"), e.getSource().getPlayerOrException())))));
+                                .executes(e -> executeUpdate(e.getSource().getPlayerOrException(), StringArgumentType.getString(e, "warp"))))));
     }
 
-    private static int execute(@NotNull String name, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int execute(@NotNull ServerPlayer player, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -256,7 +256,7 @@ public class WarpCommand {
             return 0;
         }
 
-        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
+        ServerLevel level = UtilWorld.findLevelByName(warp.getDimensionName());
 
         if (level == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotDimension()
@@ -288,9 +288,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeSet(@NotNull String name, @NotNull ServerPlayer player) {
+    private static int executeSet(@NotNull ServerPlayer player, @NotNull String name) {
         int maxWarps = Utils.maxCountWarp(player);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (isLimitWarp(player, maxWarps)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getMaxWarp()
@@ -303,7 +303,7 @@ public class WarpCommand {
             return 0;
         }
 
-        if (name.length() > ExtraWarp.getInstance().getConfig().getMaxMaxCharactersWarp()) {
+        if (name.length() > ExtraWarp.getInstance().getConfig().getMaxCharactersWarp()) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpMaxCharacters()));
             return 0;
         }
@@ -328,9 +328,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executePrivateSet(@NotNull String name, @NotNull ServerPlayer player) {
+    private static int executePrivateSet(@NotNull ServerPlayer player, @NotNull String name) {
         int maxWarps = Utils.maxCountWarp(player);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (isLimitWarp(player, maxWarps)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getMaxWarp()
@@ -343,7 +343,7 @@ public class WarpCommand {
             return 0;
         }
 
-        if (name.length() > ExtraWarp.getInstance().getConfig().getMaxMaxCharactersWarp()) {
+        if (name.length() > ExtraWarp.getInstance().getConfig().getMaxCharactersWarp()) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpMaxCharacters()));
             return 0;
         }
@@ -365,9 +365,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeDelete(@NotNull String name, @NotNull CommandSourceStack source) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeDelete(@NotNull CommandSourceStack source, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -392,9 +392,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeInfo(@NotNull String name, @NotNull CommandSourceStack source) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeInfo(@NotNull CommandSourceStack source, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -441,9 +441,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeUpdate(@NotNull String name, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeUpdate(@NotNull ServerPlayer player, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -457,7 +457,7 @@ public class WarpCommand {
             return 0;
         }
 
-        ServerLevel level = UtilWorld.getLevelByName(warp.getDimensionName());
+        ServerLevel level = UtilWorld.findLevelByName(warp.getDimensionName());
 
         if (level == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotDimension()
@@ -477,9 +477,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeRename(@NotNull String name, @NotNull String newName, @NotNull CommandSourceStack source) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeRename(@NotNull CommandSourceStack source, @NotNull String name, @NotNull String newName) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -513,9 +513,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executePrivate(@NotNull String name, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executePrivate(@NotNull ServerPlayer player, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -541,9 +541,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executePublic(@NotNull String name, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executePublic(@NotNull ServerPlayer player, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpExist()
@@ -569,9 +569,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeInvite(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeInvite(@NotNull ServerPlayer player, @NotNull String target, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -579,11 +579,11 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
+        UUID targetUUID = UtilPlayer.findUUID(target);
 
         if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
@@ -602,13 +602,13 @@ public class WarpCommand {
         if (!warp.addInvitePlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getInviteWarp()
                 .replace("%warp%", warp.getName())
-                .replace("%player%", playerName)));
+                .replace("%player%", target)));
 
         UtilPlayer.sendMessageUuid(targetUUID, UtilChat.formatMessage(localeConfig.getInvitedWarp()
                 .replace("%warp%", warp.getName())
@@ -616,9 +616,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeUnInvite(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeUnInvite(@NotNull ServerPlayer player, @NotNull String target, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -626,11 +626,11 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
+        UUID targetUUID = UtilPlayer.findUUID(target);
 
         if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
@@ -649,19 +649,19 @@ public class WarpCommand {
         if (!warp.removeInvitePlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getUnInviteWarp()
                 .replace("%warp%", warp.getName())
-                .replace("%player%", playerName)));
+                .replace("%player%", target)));
         return 1;
     }
 
-    private static int executeAddBlacklist(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeAddBlacklist(@NotNull ServerPlayer player, @NotNull String target, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -669,11 +669,11 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
+        UUID targetUUID = UtilPlayer.findUUID(target);
 
         if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
@@ -692,19 +692,19 @@ public class WarpCommand {
         if (!warp.addBlacklistPlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getBlacklistAddedWarp()
                 .replace("%warp%", warp.getName())
-                .replace("%player%", playerName)));
+                .replace("%player%", target)));
         return 1;
     }
 
-    private static int executeRemoveBlacklist(@NotNull String name, @NotNull String playerName, @NotNull ServerPlayer player) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeRemoveBlacklist(@NotNull ServerPlayer player, @NotNull String target, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -712,11 +712,11 @@ public class WarpCommand {
             return 0;
         }
 
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
+        UUID targetUUID = UtilPlayer.findUUID(target);
 
         if (targetUUID == null) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
@@ -735,13 +735,13 @@ public class WarpCommand {
         if (!warp.removeBlacklistPlayer(targetUUID)) {
             player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpPlayerAlready()
                     .replace("%warp%", warp.getName())
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
         player.sendSystemMessage(UtilChat.formatMessage(localeConfig.getBlacklistRemovedWarp()
                 .replace("%warp%", warp.getName())
-                .replace("%player%", playerName)));
+                .replace("%player%", target)));
         return 1;
     }
 
@@ -760,7 +760,7 @@ public class WarpCommand {
                 .sorted()
                 .collect(Collectors.joining(", "));
 
-        player.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getWarpAssets()
+        player.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocaleConfig().getWarpAssets()
                 .replace("%count%", String.valueOf(warps.size()))
                 .replace("%maxCount%", String.valueOf(Utils.maxCountWarp(player)))
                 .replace("%publicWarps%", publicWarps)
@@ -768,13 +768,13 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeAssetsPlayer(@NotNull CommandSourceStack source, @NotNull String playerName) {
-        UUID targetUUID = UtilPlayer.getUUID(playerName);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeAssetsPlayer(@NotNull CommandSourceStack source, @NotNull String target) {
+        UUID targetUUID = UtilPlayer.findUUID(target);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (targetUUID == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getPlayerNotFound()
-                    .replace("%player%", playerName)));
+                    .replace("%player%", target)));
             return 0;
         }
 
@@ -793,14 +793,14 @@ public class WarpCommand {
                 .collect(Collectors.joining(", "));
 
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpAssetsPlayer()
-                .replace("%player%", playerName)
+                .replace("%player%", target)
                 .replace("%publicWarps%", publicWarps)
                 .replace("%privateWarps%", privateWarps)));
         return 1;
     }
 
     private static int executeTop(@NotNull CommandSourceStack source) {
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
         List<Warp> topWarps = ExtraWarpFactory.WarpProvider.getWarps().stream()
                 .filter(warp -> !warp.isLocked())
                 .sorted(Comparator.comparingInt((Warp warp) -> warp.getUniquePlayers().size()).reversed())
@@ -823,9 +823,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeSetWelcome(@NotNull String name, Component component, @NotNull CommandSourceStack source) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeSetWelcome(@NotNull CommandSourceStack source, @NotNull String name, Component component) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -845,9 +845,9 @@ public class WarpCommand {
         return 1;
     }
 
-    private static int executeRemoveWelcome(@NotNull String name, @NotNull CommandSourceStack source) {
-        Warp warp = ExtraWarpFactory.WarpProvider.getWarpByName(name);
-        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocale();
+    private static int executeRemoveWelcome(@NotNull CommandSourceStack source, @NotNull String name) {
+        Warp warp = ExtraWarpFactory.WarpProvider.findWarpByName(name);
+        LocaleConfig localeConfig = ExtraWarp.getInstance().getLocaleConfig();
 
         if (warp == null) {
             source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpNotFound()
@@ -874,7 +874,7 @@ public class WarpCommand {
     }
 
     private static int executeHelp(@NotNull CommandSourceStack source) {
-        source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getHelp()));
+        source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocaleConfig().getHelp()));
         return 1;
     }
 
@@ -882,7 +882,7 @@ public class WarpCommand {
         ExtraWarp.getInstance().loadConfig();
         ExtraWarp.getInstance().loadStorage();
 
-        source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocale().getReload()));
+        source.sendSystemMessage(UtilChat.formatMessage(ExtraWarp.getInstance().getLocaleConfig().getReload()));
         return 1;
     }
 
