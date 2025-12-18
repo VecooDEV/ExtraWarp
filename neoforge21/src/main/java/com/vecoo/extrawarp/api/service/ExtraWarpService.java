@@ -1,33 +1,74 @@
-package com.vecoo.extrawarp.api.factory;
+package com.vecoo.extrawarp.api.service;
 
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
 import com.vecoo.extrawarp.api.events.WarpEvent;
-import com.vecoo.extrawarp.storage.Warp;
+import com.vecoo.extrawarp.service.Warp;
+import lombok.val;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class ExtraWarpFactory {
+public class ExtraWarpService {
+    @NotNull
+    public static List<Warp> getWarps() {
+        return ExtraWarp.getInstance().getWarpService().getWarps();
+    }
+
+    public static boolean hasWarpByName(@NotNull String warpName) {
+        return findWarpByName(warpName) != null;
+    }
+
+    public static void addWarp(@NotNull Warp warp) {
+        ExtraWarp.getInstance().getWarpService().addWarp(warp);
+    }
+
+    public static boolean removeWarp(@NotNull Warp warp) {
+        return ExtraWarp.getInstance().getWarpService().removeWarp(warp);
+    }
+
+    @Nullable
+    public static Warp findWarpByName(@NotNull String warpName) {
+        for (Warp warp : getWarps()) {
+            if (warp.getName().equalsIgnoreCase(warpName)) {
+                return warp;
+            }
+        }
+
+        return null;
+    }
+
+    @NotNull
+    public static List<Warp> getWarpsByPlayer(@NotNull UUID playerUUID) {
+        List<Warp> warps = new ArrayList<>();
+
+        for (Warp warp : getWarps()) {
+            if (warp.getOwnerUUID().equals(playerUUID)) {
+                warps.add(warp);
+            }
+        }
+
+        return warps;
+    }
+
     public static boolean teleportWarp(@NotNull ServerPlayer player, @NotNull Warp warp) {
-        ServerLevel level = UtilWorld.findLevelByName(warp.getDimensionName());
+        val level = UtilWorld.findLevelByName(warp.getDimensionName());
 
         if (level == null) {
             return false;
         }
 
-        BlockPos.MutableBlockPos blockPos = new BlockPos.MutableBlockPos(warp.getX(), warp.getY(), warp.getZ());
+        var blockPos = new BlockPos.MutableBlockPos(warp.getX(), warp.getY(), warp.getZ());
 
         if (!player.getAbilities().flying) {
             blockPos = findPosition(blockPos, level);
@@ -48,7 +89,7 @@ public class ExtraWarpFactory {
 
     @Nullable
     private static BlockPos.MutableBlockPos findPosition(@NotNull BlockPos.MutableBlockPos blockPos, @NotNull ServerLevel level) {
-        ChunkAccess chunk = level.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
+        val chunk = level.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
 
         if (chunk == null) {
             return null;
@@ -71,48 +112,5 @@ public class ExtraWarpFactory {
         }
 
         return blockPos;
-    }
-
-    public static class WarpProvider {
-        @NotNull
-        public static Set<Warp> getWarps() {
-            return ExtraWarp.getInstance().getWarpProvider().getWarps();
-        }
-
-        public static boolean hasWarpByName(@NotNull String warpName) {
-            return findWarpByName(warpName) != null;
-        }
-
-        public static boolean addWarp(@NotNull Warp warp) {
-            return ExtraWarp.getInstance().getWarpProvider().addWarp(warp);
-        }
-
-        public static boolean removeWarp(@NotNull Warp warp) {
-            return ExtraWarp.getInstance().getWarpProvider().removeWarp(warp);
-        }
-
-        @Nullable
-        public static Warp findWarpByName(@NotNull String warpName) {
-            for (Warp warp : getWarps()) {
-                if (warp.getName().equalsIgnoreCase(warpName)) {
-                    return warp;
-                }
-            }
-
-            return null;
-        }
-
-        @NotNull
-        public static Set<Warp> getWarpsByPlayer(@NotNull UUID playerUUID) {
-            Set<Warp> warps = new HashSet<>();
-
-            for (Warp warp : getWarps()) {
-                if (warp.getOwnerUUID().equals(playerUUID)) {
-                    warps.add(warp);
-                }
-            }
-
-            return warps;
-        }
     }
 }
