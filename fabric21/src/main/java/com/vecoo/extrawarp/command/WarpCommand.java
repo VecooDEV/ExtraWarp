@@ -102,10 +102,10 @@ public class WarpCommand {
                                         .suggests((s, builder) -> {
                                             for (Warp warp : ExtraWarpService.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
                                                 for (UUID playerUUID : warp.getInvitePlayers()) {
-                                                    String name = UtilPlayer.getPlayerName(playerUUID);
+                                                    val playerName = UtilPlayer.getPlayerName(playerUUID);
 
-                                                    if (name.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
-                                                        builder.suggest(name);
+                                                    if (playerName.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
+                                                        builder.suggest(playerName);
                                                     }
                                                 }
                                             }
@@ -143,10 +143,10 @@ public class WarpCommand {
                                                 .suggests((s, builder) -> {
                                                     for (Warp warp : ExtraWarpService.getWarpsByPlayer(s.getSource().getPlayerOrException().getUUID())) {
                                                         for (UUID playerUUID : warp.getBlacklistPlayers()) {
-                                                            String name = UtilPlayer.getPlayerName(playerUUID);
+                                                            val playerName = UtilPlayer.getPlayerName(playerUUID);
 
-                                                            if (name.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
-                                                                builder.suggest(name);
+                                                            if (playerName.toLowerCase().startsWith(builder.getRemaining().toLowerCase())) {
+                                                                builder.suggest(playerName);
                                                             }
                                                         }
                                                     }
@@ -206,6 +206,7 @@ public class WarpCommand {
                 .then(Commands.literal("assets")
                         .requires(p -> ExtraWarp.getInstance().getServerConfig().isLowPermission() || UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_COMMAND))
                         .executes(e -> executeAssets(e.getSource().getPlayerOrException()))
+
                         .then(Commands.argument("player", StringArgumentType.string())
                                 .requires(p -> UtilPermission.hasPermission(p, PermissionNodes.WARP_ASSETS_PLAYER_COMMAND))
                                 .suggests(UtilCommand.suggestOnlinePlayers())
@@ -499,7 +500,6 @@ public class WarpCommand {
         source.sendSystemMessage(UtilChat.formatMessage(localeConfig.getWarpRename()
                 .replace("%warp%", warp.getName())
                 .replace("%name%", newName)));
-
         return 1;
     }
 

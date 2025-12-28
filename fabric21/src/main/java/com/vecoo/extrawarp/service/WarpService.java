@@ -4,14 +4,18 @@ import com.vecoo.extralib.gson.UtilGson;
 import com.vecoo.extralib.task.TaskTimer;
 import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
+import lombok.Getter;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class WarpService {
+    @NotNull
     private transient final String filePath;
+    @NotNull
     private final List<Warp> warps;
 
     private transient volatile boolean dirty = false;
@@ -20,11 +24,6 @@ public class WarpService {
         this.filePath = UtilWorld.resolveWorldDirectory(filePath, server);
 
         this.warps = new ArrayList<>();
-    }
-
-    @NotNull
-    public List<Warp> getWarps() {
-        return this.warps;
     }
 
     public void markDirty() {
