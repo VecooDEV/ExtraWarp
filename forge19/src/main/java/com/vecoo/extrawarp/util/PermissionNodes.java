@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PermissionNodes {
-    public static final Set<PermissionNode<?>> PERMISSION_LIST = new HashSet<>();
+    private static final Set<PermissionNode<?>> PERMISSION_LIST = new HashSet<>();
     public static final Set<PermissionNode<Boolean>> PERMISSION_LIST_MODIFY = new HashSet<>();
 
     public static PermissionNode<Boolean> WARP_COMMAND = UtilPermission.getPermissionNode("minecraft.command.warp");
@@ -52,7 +52,7 @@ public class PermissionNodes {
         PERMISSION_LIST.add(WARP_UPDATE_COMMAND);
         PERMISSION_LIST.add(WARP_BYPASS);
 
-        for (String node : ExtraWarp.getInstance().getConfig().getPermissionListingList()) {
+        for (String node : ExtraWarp.getInstance().getServerConfig().getPermissionList()) {
             PermissionNode<Boolean> permissionNode = UtilPermission.getPermissionNode(node);
 
             PERMISSION_LIST.add(permissionNode);

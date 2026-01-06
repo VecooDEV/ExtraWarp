@@ -1,9 +1,2 @@
-* Update logger.
-* Update find position warp.
-* Added annotations.
-* Update depends.
-* Update warp storage.
-* Added permission warp bypass.
-* Added hide position locked warp.
-* Fixes bug.
-* Optimization.
+## The mod for this version of Minecraft is limited/partially limited in functionality, support for such versions is provided at low priority.
+* Update 1.3.1.

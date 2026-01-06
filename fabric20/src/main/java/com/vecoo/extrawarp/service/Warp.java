@@ -1,6 +1,8 @@
-package com.vecoo.extrawarp.storage.warp;
+package com.vecoo.extrawarp.service;
 
 import com.vecoo.extrawarp.ExtraWarp;
+import lombok.Getter;
+import lombok.ToString;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,13 +11,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@Getter
+@ToString
 public class Warp {
+    @NotNull
     private String name;
     private double x, y, z;
     private float xRot, yRot;
+    @NotNull
     private String dimensionName;
+    @NotNull
     private final UUID ownerUUID;
+    @NotNull
     private final Set<UUID> invitePlayers, blacklistPlayers, uniquePlayers;
+    @NotNull
     private String welcomeText;
     private boolean locked;
 
@@ -35,68 +44,9 @@ public class Warp {
         this.locked = isLocked;
     }
 
-    @NotNull
-    public String getName() {
-        return this.name;
-    }
-
-    public double getX() {
-        return this.x;
-    }
-
-    public double getY() {
-        return this.y;
-    }
-
-    public double getZ() {
-        return this.z;
-    }
-
-    public float getXRot() {
-        return this.xRot;
-    }
-
-    public float getYRot() {
-        return this.yRot;
-    }
-
-    @NotNull
-    public String getDimensionName() {
-        return this.dimensionName;
-    }
-
-    @NotNull
-    public UUID getOwnerUUID() {
-        return this.ownerUUID;
-    }
-
-    @NotNull
-    public Set<UUID> getInvitePlayers() {
-        return this.invitePlayers;
-    }
-
-    @NotNull
-    public Set<UUID> getBlacklistPlayers() {
-        return this.blacklistPlayers;
-    }
-
-    @NotNull
-    public Set<UUID> getUniquePlayers() {
-        return this.uniquePlayers;
-    }
-
-    @NotNull
-    public String getWelcomeText() {
-        return this.welcomeText;
-    }
-
-    public boolean isLocked() {
-        return this.locked;
-    }
-
     public void setName(@NotNull String name) {
         this.name = name;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     public void setCoordinatePosition(double x, double y, double z, float xRot, float yRot) {
@@ -105,7 +55,7 @@ public class Warp {
         this.z = getFormatted(z);
         this.xRot = getFormatted(xRot);
         this.yRot = getFormatted(yRot);
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     public void updatePosition(@NotNull ServerPlayer player) {
@@ -115,12 +65,12 @@ public class Warp {
         this.xRot = getFormatted(player.getXRot());
         this.yRot = getFormatted(player.getYRot());
         this.dimensionName = player.level().dimension().location().getPath();
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     public void setDimensionName(@NotNull String dimensionName) {
         this.dimensionName = dimensionName;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     public boolean addInvitePlayer(@NotNull UUID playerUUID) {
@@ -128,7 +78,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
         return true;
     }
 
@@ -137,7 +87,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
         return true;
     }
 
@@ -146,7 +96,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
         return true;
     }
 
@@ -155,7 +105,7 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
         return true;
     }
 
@@ -164,18 +114,18 @@ public class Warp {
             return false;
         }
 
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
         return true;
     }
 
     public void setWelcomeText(@Nullable String text) {
         this.welcomeText = text == null ? "" : text;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     public void setLocked(boolean locked) {
         this.locked = locked;
-        ExtraWarp.getInstance().getWarpProvider().updateStorage();
+        ExtraWarp.getInstance().getWarpService().markDirty();
     }
 
     private double getFormatted(double value) {
@@ -184,23 +134,5 @@ public class Warp {
 
     private float getFormatted(float value) {
         return Math.round(value * 100F) / 100F;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (this == object) {
-            return true;
-        }
-
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-
-        return this.name.equalsIgnoreCase(((Warp) object).name);
-    }
-
-    @Override
-    public int hashCode() {
-        return this.name.toLowerCase().hashCode();
     }
 }

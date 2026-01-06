@@ -1,10 +1,12 @@
 package com.vecoo.extrawarp;
 
 import com.mojang.logging.LogUtils;
+import com.vecoo.extralib.config.YamlConfigFactory;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;
 import com.vecoo.extrawarp.config.ServerConfig;
-import com.vecoo.extrawarp.storage.warp.WarpProvider;
+import com.vecoo.extrawarp.service.WarpService;
+import lombok.Getter;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -15,12 +17,13 @@ public class ExtraWarp implements ModInitializer {
     public static final String MOD_ID = "extrawarp";
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    @Getter
     private static ExtraWarp instance;
 
-    private ServerConfig config;
-    private LocaleConfig locale;
+    private ServerConfig serverConfig;
+    private LocaleConfig localeConfig;
 
-    private WarpProvider warpProvider;
+    private WarpService warpService;
 
     private MinecraftServer server;
 
@@ -35,50 +38,37 @@ public class ExtraWarp implements ModInitializer {
             this.server = server;
             loadStorage();
         });
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> this.warpProvider.write());
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> this.warpService.save());
     }
 
     public void loadConfig() {
-        try {
-            this.config = new ServerConfig();
-            this.config.init();
-            this.locale = new LocaleConfig();
-            this.locale.init();
-        } catch (Exception e) {
-            LOGGER.error("Error load config.", e);
-        }
+        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, "config/ExtraWarp/config.yml");
+        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, "config/ExtraWarp/locale.yml");
     }
 
-    public void loadStorage() {
+    private void loadStorage() {
         try {
-            if (this.warpProvider == null) {
-                this.warpProvider = new WarpProvider("/%directory%/storage/ExtraWarp/", this.server);
-            }
-
-            this.warpProvider.init();
+            this.warpService = new WarpService("/%directory%/storage/ExtraWarp/", this.server);
+            this.warpService.init();
         } catch (Exception e) {
             LOGGER.error("Error load storage.", e);
         }
-    }
-
-    public static ExtraWarp getInstance() {
-        return instance;
     }
 
     public static Logger getLogger() {
         return LOGGER;
     }
 
-    public ServerConfig getConfig() {
-        return instance.config;
+    public ServerConfig getServerConfig() {
+        return instance.serverConfig;
     }
 
-    public LocaleConfig getLocale() {
-        return instance.locale;
+    public LocaleConfig getLocaleConfig() {
+        return instance.localeConfig;
     }
 
-    public WarpProvider getWarpProvider() {
-        return instance.warpProvider;
+    public WarpService getWarpService() {
+        return instance.warpService;
     }
 
     public MinecraftServer getServer() {

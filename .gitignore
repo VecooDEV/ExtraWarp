@@ -4,9 +4,7 @@
 /.idea/
 /.gradle/
 /build/
-/neoforge21/.gradle/
 /neoforge21/build/
-/neoforge21/runs/
 /forge20/build/
 /forge19/build/
 /fabric21/.gradle/
