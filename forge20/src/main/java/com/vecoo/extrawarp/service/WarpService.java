@@ -26,10 +26,6 @@ public class WarpService {
         this.warps = new ArrayList<>();
     }
 
-    public void markDirty() {
-        this.dirty = true;
-    }
-
     public void addWarp(@NotNull Warp warp) {
         this.warps.add(warp);
         this.dirty = true;
@@ -43,6 +39,10 @@ public class WarpService {
 
         this.dirty = true;
         return true;
+    }
+
+    public void markDirty() {
+        this.dirty = true;
     }
 
     public void save() {

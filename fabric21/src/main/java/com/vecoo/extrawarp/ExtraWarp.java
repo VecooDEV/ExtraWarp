@@ -13,8 +13,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 
-import java.nio.file.Path;
-
 public class ExtraWarp implements ModInitializer {
     public static final String MOD_ID = "extrawarp";
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -44,8 +42,8 @@ public class ExtraWarp implements ModInitializer {
     }
 
     public void loadConfig() {
-        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, Path.of("config/ExtraWarp/config.yml"));
-        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, Path.of("config/ExtraWarp/locale.yml"));
+        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, "config/ExtraWarp/config.yml");
+        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, "config/ExtraWarp/locale.yml");
     }
 
     private void loadStorage() {

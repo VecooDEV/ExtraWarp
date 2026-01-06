@@ -15,6 +15,7 @@ public class Utils {
     public static boolean isBlockedNameWarp(@NotNull String warpName) {
         val blockedNamesWarp = Sets.newHashSet("set", "pset", "delete", "private", "invite", "uninvite",
                 "blacklist", "public", "rename", "welcome", "help", "reload", "assets", "info", "update");
+
         blockedNamesWarp.addAll(ExtraWarp.getInstance().getServerConfig().getBlockedNamesWarp());
 
         return blockedNamesWarp.contains(warpName.toLowerCase());

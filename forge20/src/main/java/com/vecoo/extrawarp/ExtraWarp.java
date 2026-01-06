@@ -18,8 +18,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.permission.events.PermissionGatherEvent;
 import org.slf4j.Logger;
 
-import java.nio.file.Path;
-
 @Mod(ExtraWarp.MOD_ID)
 public class ExtraWarp {
     public static final String MOD_ID = "extrawarp";
@@ -65,8 +63,8 @@ public class ExtraWarp {
     }
 
     public void loadConfig() {
-        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, Path.of("config/ExtraWarp/config.yml"));
-        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, Path.of("config/ExtraWarp/locale.yml"));
+        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, "config/ExtraWarp/config.yml");
+        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, "config/ExtraWarp/locale.yml");
     }
 
     private void loadStorage() {
