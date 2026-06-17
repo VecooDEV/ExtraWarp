@@ -1,5 +1,7 @@
 package com.vecoo.extrawarp.util;
 
+import com.vecoo.extrawarp.ExtraWarp;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,4 +27,8 @@ public class PermissionNodes {
             WARP_INFO_COMMAND = "minecraft.command.warp.info",
             WARP_UPDATE_COMMAND = "minecraft.command.warp.update",
             WARP_BYPASS = "extrawarp.bypass";
+
+    public static void registerPermission() {
+            PERMISSION_LIST_MODIFY.addAll(ExtraWarp.getInstance().getServerConfig().getPermissionList());
+    }
 }

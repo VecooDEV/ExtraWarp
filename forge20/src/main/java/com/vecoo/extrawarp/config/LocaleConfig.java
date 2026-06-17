@@ -8,6 +8,7 @@ import java.util.List;
 
 @Getter
 @ConfigSerializable
+@SuppressWarnings("FieldMayBeFinal")
 public class LocaleConfig {
     private String reload = "&e(!) Configs have been reloaded.";
     private String setWarp = "&e(!) You have successfully set warp %warp%.";

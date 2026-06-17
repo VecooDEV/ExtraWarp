@@ -2,6 +2,7 @@ package com.vecoo.extrawarp;
 
 import com.mojang.logging.LogUtils;
 import com.vecoo.extralib.config.YamlConfigFactory;
+import com.vecoo.extralib.loader.YamlLoader;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;
 import com.vecoo.extrawarp.config.ServerConfig;
@@ -17,6 +18,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.permission.events.PermissionGatherEvent;
 import org.slf4j.Logger;
+
+import java.io.IOException;
 
 @Mod(ExtraWarp.MOD_ID)
 public class ExtraWarp {
@@ -59,20 +62,25 @@ public class ExtraWarp {
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        this.warpService.save();
+        this.warpService.save(true);
     }
 
     public void loadConfig() {
-        this.serverConfig = YamlConfigFactory.load(ServerConfig.class, "config/ExtraWarp/config.yml");
-        this.localeConfig = YamlConfigFactory.load(LocaleConfig.class, "config/ExtraWarp/locale.yml");
+        try {
+            this.serverConfig = YamlLoader.load(ServerConfig.class, "config/extrawarp/config.yml", false);
+            this.localeConfig = YamlLoader.load(LocaleConfig.class, "config/extrawarp/locale.yml", false);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
-    private void loadStorage() {
+    public void loadStorage() {
+        this.warpService = new WarpService("%directory%/storage/extrawarp/warps/", this.server);
+
         try {
-            this.warpService = new WarpService("/%directory%/storage/ExtraWarp/", this.server);
             this.warpService.init();
-        } catch (Exception e) {
-            LOGGER.error("Error load storage.", e);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
         }
     }
 

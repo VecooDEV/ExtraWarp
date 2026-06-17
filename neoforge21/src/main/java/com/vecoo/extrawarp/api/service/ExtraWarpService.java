@@ -1,28 +1,21 @@
 package com.vecoo.extrawarp.api.service;
 
-import com.vecoo.extralib.world.UtilWorld;
 import com.vecoo.extrawarp.ExtraWarp;
-import com.vecoo.extrawarp.api.events.WarpEvent;
 import com.vecoo.extrawarp.service.Warp;
 import lombok.val;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExtraWarpService {
     @NotNull
-    public static List<Warp> getWarps() {
-        return ExtraWarp.getInstance().getWarpService().getWarps();
+    public static Map<String, Warp> getStorage() {
+        return Collections.unmodifiableMap(ExtraWarp.getInstance().getWarpService().getStorage());
     }
 
     public static boolean hasWarpByName(@NotNull String warpName) {
@@ -33,84 +26,59 @@ public class ExtraWarpService {
         ExtraWarp.getInstance().getWarpService().addWarp(warp);
     }
 
-    public static boolean removeWarp(@NotNull Warp warp) {
-        return ExtraWarp.getInstance().getWarpService().removeWarp(warp);
+    public static boolean removeWarp(@NotNull String warpName) {
+        return ExtraWarp.getInstance().getWarpService().removeWarp(warpName);
     }
 
     @Nullable
     public static Warp findWarpByName(@NotNull String warpName) {
-        for (Warp warp : getWarps()) {
-            if (warp.getName().equalsIgnoreCase(warpName)) {
-                return warp;
-            }
-        }
-
-        return null;
+        return ExtraWarp.getInstance().getWarpService().getStorage(warpName);
     }
 
     @NotNull
-    public static List<Warp> getWarpsByPlayer(@NotNull UUID playerUUID) {
-        List<Warp> warps = new ArrayList<>();
+    public static Set<Warp> getWarpsByPlayer(@NotNull UUID playerUUID) {
+        val playerWarps = ExtraWarp.getInstance().getWarpService().getPlayerWarpsCache().get(playerUUID);
 
-        for (Warp warp : getWarps()) {
-            if (warp.getOwnerUUID().equals(playerUUID)) {
-                warps.add(warp);
-            }
-        }
-
-        return warps;
+        return playerWarps != null ? Collections.unmodifiableSet(playerWarps) : Collections.emptySet();
     }
 
-    public static boolean teleportWarp(@NotNull ServerPlayer player, @NotNull Warp warp) {
-        val level = UtilWorld.findLevelByName(warp.getDimensionName());
+    public static boolean invitePlayer(@NotNull String warpName, @NotNull UUID targetUUID) {
+        val added = new AtomicBoolean(false);
 
-        if (level == null) {
-            return false;
-        }
+        ExtraWarp.getInstance().getWarpService().modifyStorage(warpName, warp -> {
+            added.set(warp.addInvitePlayer(targetUUID));
+        });
 
-        var blockPos = new BlockPos.MutableBlockPos(warp.getX(), warp.getY(), warp.getZ());
-
-        if (!player.getAbilities().flying) {
-            blockPos = findPosition(blockPos, level);
-
-            if (blockPos == null) {
-                return false;
-            }
-        }
-
-        if (NeoForge.EVENT_BUS.post(new WarpEvent.Teleport(warp, player)).isCanceled()) {
-            return false;
-        }
-
-        player.teleportTo(level, warp.getX(), blockPos.getY(), warp.getZ(), warp.getYRot(), warp.getXRot());
-        player.setDeltaMovement(Vec3.ZERO);
-        return true;
+        return added.get();
     }
 
-    @Nullable
-    private static BlockPos.MutableBlockPos findPosition(@NotNull BlockPos.MutableBlockPos blockPos, @NotNull ServerLevel level) {
-        val chunk = level.getChunkSource().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.FEATURES, true);
+    public static boolean removeInvitePlayer(@NotNull String warpName, @NotNull UUID targetUUID) {
+        val added = new AtomicBoolean(false);
 
-        if (chunk == null) {
-            return null;
-        }
+        ExtraWarp.getInstance().getWarpService().modifyStorage(warpName, warp -> {
+            added.set(warp.removeInvitePlayer(targetUUID));
+        });
 
-        while (blockPos.getY() > level.getMinBuildHeight()) {
-            if (!chunk.getBlockState(blockPos).isAir()) {
-                break;
-            }
+        return added.get();
+    }
 
-            blockPos.move(Direction.DOWN);
-        }
+    public static boolean blacklistPlayer(@NotNull String warpName, @NotNull UUID targetUUID) {
+        val added = new AtomicBoolean(false);
 
-        if (blockPos.getY() < level.getMinBuildHeight()) {
-            return null;
-        }
+        ExtraWarp.getInstance().getWarpService().modifyStorage(warpName, warp -> {
+            added.set(warp.addBlacklistPlayer(targetUUID));
+        });
 
-        if (!chunk.getBlockState(blockPos).getCollisionShape(chunk, blockPos).isEmpty()) {
-            blockPos.move(Direction.UP);
-        }
+        return added.get();
+    }
 
-        return blockPos;
+    public static boolean removeBlacklistPlayer(@NotNull String warpName, @NotNull UUID targetUUID) {
+        val added = new AtomicBoolean(false);
+
+        ExtraWarp.getInstance().getWarpService().modifyStorage(warpName, warp -> {
+            added.set(warp.removeBlacklistPlayer(targetUUID));
+        });
+
+        return added.get();
     }
 }
