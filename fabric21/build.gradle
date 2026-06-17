@@ -1,11 +1,13 @@
 plugins {
-    id 'fabric-loom' version '1.13+'
-    id 'com.modrinth.minotaur' version '2.8.10'
+    id 'fabric-loom' version '1.16+'
+    id 'com.modrinth.minotaur' version '2.9.0'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-archivesBaseName = "${project_name}"
+base {
+    archivesName = "${project_name}"
+}
 
 version = "${project_version}-1.21.1-Fabric"
 
@@ -19,6 +21,8 @@ dependencies {
     modApi "maven.modrinth:extralib:${extralib}-fabric,1.21.1"
 }
 
+remapJar {}
+
 processResources {
     filesMatching('fabric.mod.json') {
         expand(
@@ -27,8 +31,6 @@ processResources {
         )
     }
 }
-
-remapJar {}
 
 def gradleProperties = new Properties()
 def gradlePropertiesFile = new File(rootProject.file("/.gradle/gradle.properties").path)
@@ -51,7 +53,5 @@ modrinth {
         required.project "extralib"
     }
 }
-
-remapJar {}
 
 build.finalizedBy('versionedRelease')
