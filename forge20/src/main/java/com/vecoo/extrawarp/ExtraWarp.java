@@ -1,7 +1,6 @@
 package com.vecoo.extrawarp;
 
 import com.mojang.logging.LogUtils;
-import com.vecoo.extralib.config.YamlConfigFactory;
 import com.vecoo.extralib.loader.YamlLoader;
 import com.vecoo.extrawarp.command.WarpCommand;
 import com.vecoo.extrawarp.config.LocaleConfig;

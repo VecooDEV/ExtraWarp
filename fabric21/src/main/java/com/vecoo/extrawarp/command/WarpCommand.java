@@ -10,6 +10,7 @@ import com.vecoo.extrawarp.service.Warp;
 import com.vecoo.extrawarp.util.PermissionNodes;
 import com.vecoo.extrawarp.util.Utils;
 import lombok.val;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.MessageArgument;
@@ -26,7 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class WarpCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, Commands.CommandSelection commandSelection) {
         dispatcher.register(Commands.literal("warp")
                 .requires(p -> PermissionUtil.hasPermission(p, PermissionNodes.WARP_COMMAND))
                 .then(Commands.argument("warp", StringArgumentType.string())
